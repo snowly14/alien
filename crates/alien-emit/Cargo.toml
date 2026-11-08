@@ -1,0 +1,16 @@
+[package]
+name = "alien-emit"
+description = "Génération du CSS final et du code de remplacement (tokens, classes)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+alien-core.workspace = true
+alien-ir.workspace = true
+alien-tokens.workspace = true
+alien-optimizer.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "alien-ir"
+description = "Représentation intermédiaire des styles, indépendante de la source"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+alien-core.workspace = true

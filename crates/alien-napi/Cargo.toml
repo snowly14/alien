@@ -1,0 +1,14 @@
+[package]
+name = "alien-napi"
+description = "Liaison Node.js / Bun pour les plugins de bundler"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+# Pas de [lints] workspace : napi-rs a besoin de unsafe.
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+alien-compiler.workspace = true

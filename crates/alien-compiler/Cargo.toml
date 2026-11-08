@@ -1,0 +1,19 @@
+[package]
+name = "alien-compiler"
+description = "API unique du compilateur : analyse et orchestration du pipeline"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+alien-core.workspace = true
+alien-color.workspace = true
+alien-tokens.workspace = true
+alien-parser.workspace = true
+alien-ir.workspace = true
+alien-optimizer.workspace = true
+alien-emit.workspace = true

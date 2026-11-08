@@ -1,0 +1,14 @@
+{
+  "name": "alien-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "check": "cargo check --workspace && tsc --noEmit",
+    "lint": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
+    "test": "cargo test --workspace"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  }
+}

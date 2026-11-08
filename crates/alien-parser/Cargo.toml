@@ -1,0 +1,13 @@
+[package]
+name = "alien-parser"
+description = "Lecture du TypeScript (SWC) : alien.create, keyframes, variants, alien.config.ts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+alien-core.workspace = true

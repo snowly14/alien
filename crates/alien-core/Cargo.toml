@@ -1,0 +1,12 @@
+[package]
+name = "alien-core"
+description = "Types partagés et diagnostics : identifiants, chemins de tokens, positions, erreurs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]

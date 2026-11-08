@@ -1,0 +1,17 @@
+[package]
+name = "alien-cli"
+description = "Binaire alien : build, dev, check"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "alien"
+path = "src/main.rs"
+
+[dependencies]
+alien-compiler.workspace = true
