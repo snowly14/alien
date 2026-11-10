@@ -8,6 +8,6 @@
   },
   "files": ["src"],
   "dependencies": {
-    "alien-css": "workspace:*"
+    "alien": "workspace:*"
   }
 }

@@ -1,0 +1,48 @@
+/** Pseudo-classes that take no arguments, written in camelCase. */
+export type SimplePseudoClass =
+  // Interaction
+  | "hover"
+  | "active"
+  | "focus"
+  | "focusVisible"
+  | "focusWithin"
+  // Links and navigation
+  | "link"
+  | "visited"
+  | "anyLink"
+  | "target"
+  // Forms
+  | "checked"
+  | "disabled"
+  | "enabled"
+  | "required"
+  | "optional"
+  | "valid"
+  | "invalid"
+  | "userValid"
+  | "userInvalid"
+  | "inRange"
+  | "outOfRange"
+  | "placeholderShown"
+  | "readOnly"
+  | "readWrite"
+  | "default"
+  | "indeterminate"
+  | "autofill"
+  // Document structure
+  | "firstChild"
+  | "lastChild"
+  | "onlyChild"
+  | "firstOfType"
+  | "lastOfType"
+  | "onlyOfType"
+  | "empty"
+  | "root"
+  // Element and media states
+  | "fullscreen"
+  | "modal"
+  | "popoverOpen"
+  | "open"
+  | "playing"
+  | "paused"
+  | "defined";

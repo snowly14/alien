@@ -1,0 +1,14 @@
+{
+  "name": "alien",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./values": "./src/values/index.ts"
+  },
+  "files": [
+    "src"
+  ]
+}

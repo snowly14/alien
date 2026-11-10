@@ -1,11 +1,13 @@
 {
   "name": "alien-monorepo",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "check": "cargo check --workspace && tsc --noEmit",
     "lint": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
-    "test": "cargo test --workspace"
+    "test": "cargo test --workspace && bun test packages/alien"
   },
   "devDependencies": {
     "@types/bun": "latest",

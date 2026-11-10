@@ -1,6 +1,6 @@
 [package]
 name = "alien-tokens"
-description = "Tokens : valeurs par défaut, fusion avec ceux de l'utilisateur, résolution des références"
+description = "Tokens : default values, merging with the user's values, resolving references"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

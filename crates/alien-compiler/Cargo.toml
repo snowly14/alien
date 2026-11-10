@@ -10,10 +10,8 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
-alien-core.workspace = true
 alien-color.workspace = true
 alien-tokens.workspace = true
 alien-parser.workspace = true
 alien-ir.workspace = true
-alien-optimizer.workspace = true
 alien-emit.workspace = true

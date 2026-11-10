@@ -1,6 +1,6 @@
 [package]
 name = "alien-parser"
-description = "Lecture du TypeScript (SWC) : alien.create, keyframes, variants, alien.config.ts"
+description = "TypeScript parsing for styles, keyframes, variants, and alien.globals.ts"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -10,4 +10,10 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
-alien-core.workspace = true
+alien-ir.workspace = true
+
+oxc_allocator = "=0.158.0"
+oxc_ast = "=0.158.0"
+oxc_ast_visit = "=0.158.0"
+oxc_parser = "=0.158.0"
+oxc_span = "=0.158.0"
