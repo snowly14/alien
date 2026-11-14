@@ -9,7 +9,7 @@ pub enum Radius {
     Full,
 }
 
-/// Built-in corner radii, following the Tailwind CSS scale.
+/// Built-in corner radius tokens, following the Tailwind CSS scale.
 pub const RADIUS: &[(&str, Radius)] = &[
     ("none", Radius::Fixed(Rem(0.0))),
     ("xs", Radius::Fixed(Rem(0.125))),

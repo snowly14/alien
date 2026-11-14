@@ -1,14 +1,20 @@
 [package]
 name = "alien-napi"
-description = "Liaison Node.js / Bun pour les plugins de bundler"
+description = "Native compiler bindings for Node.js and Bun bundler plugins"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 
-# Pas de [lints] workspace : napi-rs a besoin de unsafe.
+# The native bindings require unsafe code, which the workspace lints forbid.
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
 alien-compiler.workspace = true
+alien-ir.workspace = true
+napi = "3.16.2"
+napi-derive = "3.7.1"
+
+[build-dependencies]
+napi-build = "2.6.0"

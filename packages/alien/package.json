@@ -5,10 +5,20 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts",
-    "./values": "./src/values/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./values": {
+      "types": "./dist/values/index.d.ts",
+      "default": "./dist/values/index.js"
+    },
+    "./cx": {
+      "types": "./dist/cx.d.ts",
+      "default": "./dist/cx.js"
+    }
   },
   "files": [
-    "src"
+    "dist"
   ]
 }

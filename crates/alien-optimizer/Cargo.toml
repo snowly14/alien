@@ -1,6 +1,6 @@
 [package]
 name = "alien-optimizer"
-description = "Choix entre CSS atomique et groupé, par mesure de taille"
+description = "Size-based optimization of atomic and grouped CSS output"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

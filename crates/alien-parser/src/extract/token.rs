@@ -1,4 +1,4 @@
-use alien_ir::ColorToken;
+use alien_ir::{ColorToken, TokenFamily, Value};
 use oxc_ast::ast::Expression;
 use oxc_span::GetSpan;
 
@@ -26,10 +26,11 @@ pub(super) fn collect_path(expr: &Expression<'_>, parts: &mut Vec<PathPart>) -> 
 pub(super) fn lower_color_token(
     expr: &Expression<'_>,
     imports: &Imports<'_>,
+    property: &str,
 ) -> Result<ColorToken, String> {
     let invalid = || {
         at(
-            "backgroundColor expects a color token imported from `alien`",
+            &format!("{property} expects a color token imported from `alien`"),
             expr.span(),
         )
     };
@@ -68,9 +69,47 @@ pub(super) fn lower_color_token(
         None => match name {
             "black" => Ok(ColorToken::Black),
             "white" => Ok(ColorToken::White),
-            _ => Err(invalid()),
+            name => Ok(ColorToken::Named(name.to_owned())),
         },
     }
+}
+
+pub(super) fn lower_token(
+    value: &Expression<'_>,
+    imports: &Imports<'_>,
+    family: TokenFamily,
+) -> Result<Value, String> {
+    let expected = family.as_str();
+    if let Some((category, name)) = named_token_path(value, imports)
+        && category == expected
+    {
+        return Ok(Value::Token(family, name.to_owned()));
+    }
+    Err(at(
+        &format!("expected a `{expected}` token imported from `alien`"),
+        value.span(),
+    ))
+}
+
+pub(super) fn named_token_path<'source>(
+    expr: &Expression<'source>,
+    imports: &Imports<'_>,
+) -> Option<(&'source str, &'source str)> {
+    let Expression::StaticMemberExpression(member) = expr.get_inner_expression() else {
+        return None;
+    };
+    let Expression::StaticMemberExpression(category) = member.object.get_inner_expression() else {
+        return None;
+    };
+    let Expression::Identifier(root) = category.object.get_inner_expression() else {
+        return None;
+    };
+    imports.is_token_root(root.name.as_str()).then(|| {
+        (
+            category.property.name.as_str(),
+            member.property.name.as_str(),
+        )
+    })
 }
 
 fn token_index(expr: &Expression<'_>) -> Result<u32, String> {

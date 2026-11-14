@@ -1,7 +1,10 @@
 pub(super) mod breakpoint;
 pub(super) mod color;
+pub(super) mod duration;
 pub(super) mod ease;
 pub(super) mod font_size;
 pub(super) mod font_weight;
+pub(super) mod line_height;
 pub(super) mod radius;
+pub(super) mod shadow;
 pub(super) mod space;

@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use alien_ir::{ListSeparator, Value};
+
 use oxc_ast::{
     StaticPropertyName,
     ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKind},
@@ -42,4 +44,28 @@ pub(super) fn expect_object<'node, 'source>(
         Expression::ObjectExpression(object) => Ok(object),
         _ => Err(at(&format!("`{context}` expects an object"), expr.span())),
     }
+}
+
+pub(super) fn lower_list<'source>(
+    value: &Expression<'source>,
+    separator: ListSeparator,
+    mut lower_item: impl FnMut(&Expression<'source>) -> Result<Value, String>,
+) -> Result<Value, String> {
+    let Expression::ArrayExpression(array) = value.get_inner_expression() else {
+        return Err(at("expected a non-empty array", value.span()));
+    };
+    if array.elements.is_empty() {
+        return Err(at("expected a non-empty array", array.span));
+    }
+    let items = array
+        .elements
+        .iter()
+        .map(|item| {
+            let expression = item
+                .as_expression()
+                .ok_or_else(|| at("expected an array value", item.span()))?;
+            lower_item(expression)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Value::List(separator, items))
 }

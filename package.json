@@ -2,15 +2,62 @@
   "name": "alien-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
-    "check": "cargo check --workspace && tsc --noEmit",
-    "lint": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
-    "test": "cargo test --workspace && bun test packages/alien"
+    "check": "cargo check --workspace && bun run prepare:demo && tsc --noEmit && tsc --noEmit -p examples/react/tsconfig.json",
+    "lint": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && biome check .",
+    "test": "cargo test --workspace && bun run build:packages && bun run build:native && bun test packages",
+    "demo:native": "bun run build:packages && bun run build:native",
+    "demo": "bun run demo:native && bun run --cwd examples/react dev",
+    "demo:build": "bun run demo:native && bun run --cwd examples/react build",
+    "demo:preview": "bun run --cwd examples/react preview",
+    "build:native": "bun run scripts/build-demo-native.ts",
+    "prepare:demo": "bun run build:packages && bun run build:native && bun run packages/alien-vite/src/cli.ts prepare examples/react",
+    "format": "cargo fmt --all && biome check --write .",
+    "test:package": "bun run build:packages && bun run build:native && bun run scripts/test-package.ts",
+    "bench:css": "bun run build:native && bun run scripts/bench-css.ts",
+    "bench:compiler": "bun run build:native --release && bun run scripts/bench-compiler.ts",
+    "build:packages": "bun run scripts/build-packages.ts",
+    "test:frameworks": "bun run build:packages && bun run build:native && bun run scripts/test-frameworks.ts"
   },
   "devDependencies": {
+    "@angular/build": "^22.2.7",
+    "@angular/cli": "^22.2.7",
+    "@angular/common": "^22.2.6",
+    "@angular/compiler": "^22.2.6",
+    "@angular/compiler-cli": "^22.2.6",
+    "@angular/core": "^22.2.6",
+    "@angular/platform-browser": "^22.2.6",
+    "@astrojs/compiler": "^4.0.0",
+    "@babel/core": "7",
+    "@biomejs/biome": "2.6.7",
+    "@stylexjs/babel-plugin": "0.19.2",
+    "@sveltejs/adapter-static": "^4.0.1",
+    "@sveltejs/kit": "^3.2.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/node": "4.3.5",
+    "@types/babel__core": "7.20.5",
     "@types/bun": "latest",
-    "typescript": "^5.6.0"
-  }
+    "@vitejs/plugin-react": "^6.3.0",
+    "@vitejs/plugin-vue": "^6.0.11",
+    "astro": "^7.4.11",
+    "css-loader": "^7.1.5",
+    "lightningcss": "1.33.0",
+    "mini-css-extract-plugin": "^2.10.2",
+    "next": "^16.4.6",
+    "nuxt": "^4.6.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "rxjs": "^7.8.2",
+    "solid-js": "^1.9.19",
+    "svelte": "^5.57.3",
+    "tailwindcss": "4.3.5",
+    "typescript": "~6.0.3",
+    "vite-plugin-solid": "^2.11.16",
+    "vue": "^3.5.45",
+    "webpack": "^5.112.2"
+  },
+  "packageManager": "bun@1.4.3"
 }

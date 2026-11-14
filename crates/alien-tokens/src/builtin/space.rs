@@ -2,6 +2,8 @@ use alien_core::units::Rem;
 
 /// Built-in spacing values.
 pub const SPACE: &[(&str, Rem)] = &[
+    ("none", Rem(0.0)),
+    ("xxs", Rem(0.125)),
     ("xs", Rem(0.25)),
     ("sm", Rem(0.5)),
     ("md", Rem(1.0)),

@@ -5,10 +5,18 @@
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "target": "es2023",
+    "jsx": "react-jsx",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["bun"]
+    "types": [
+      "bun"
+    ]
   },
-  "include": ["packages/*/src", "packages/*/tests"]
+  "include": [
+    "packages/*/src",
+    "packages/*/tests",
+    "scripts"
+  ]
 }

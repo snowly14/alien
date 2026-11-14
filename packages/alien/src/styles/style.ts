@@ -1,22 +1,40 @@
+import type { Mode, ProjectMode } from "../config";
 import type { breakpoint } from "../tokens/breakpoint";
 import type { TokenReference } from "../tokens/reference";
 import type { Color, TokenColor } from "../values/color";
 import type { Custom } from "../values/custom";
 import type { Important } from "../values/important";
-import type { Fraction, Length, Percent, Time } from "../values/units";
+import type { Fraction, Length, LengthString, Percent, Time } from "../values/units";
 import type { CssKeyword } from "./css";
 import type { SimplePseudoClass } from "./pseudo-classes";
 
-type StyleColor = TokenColor | Custom<Color> | CssKeyword<"color">;
-type LengthOrPercent = Length | Percent;
-type Space = TokenReference<"space"> | Custom<LengthOrPercent>;
-type Margin = Space | CssKeyword<"margin">;
-type Radius = TokenReference<"radius"> | Custom<LengthOrPercent>;
+type StyleColor<M extends Mode> =
+  | TokenColor
+  | CssKeyword<"color">
+  | (M extends "free" ? Color | string | Custom<Color> : never);
+type LengthOrPercent = Length | Percent | LengthString;
+type Space<M extends Mode> =
+  | TokenReference<"space">
+  | (M extends "free" ? LengthOrPercent | Custom<LengthOrPercent> : never);
+type Margin<M extends Mode> = Space<M> | CssKeyword<"margin">;
+type Radius<M extends Mode> =
+  | TokenReference<"radius">
+  | (M extends "free" ? LengthOrPercent | Custom<LengthOrPercent> : never);
 type Inset = LengthOrPercent | CssKeyword<"inset">;
 type GridTrack = LengthOrPercent | Fraction | CssKeyword<"gridTrack">;
 type GridTrackList = readonly [GridTrack, ...GridTrack[]];
 type FontFamily = CssKeyword<"fontFamily"> | Custom<string>;
+type Duration<M extends Mode> = TokenReference<"duration"> | (M extends "free" ? Time : never);
 type TimingFunction = TokenReference<"ease"> | CssKeyword<"timingFunction">;
+type TranslateAxes = {
+  readonly x?: LengthOrPercent;
+  readonly y?: LengthOrPercent;
+  readonly z?: Length;
+};
+type Translate =
+  | CssKeyword<"translate">
+  | (TranslateAxes &
+      ({ readonly x: LengthOrPercent } | { readonly y: LengthOrPercent } | { readonly z: Length }));
 
 type ImportantDeclarations<Declarations> = {
   readonly [Property in keyof Declarations]:
@@ -24,13 +42,13 @@ type ImportantDeclarations<Declarations> = {
     | Important<Required<Declarations>[Property]>;
 };
 
-type Border = ImportantDeclarations<{
+type Border<M extends Mode> = ImportantDeclarations<{
   width?: Length | CssKeyword<"borderWidth">;
   style?: CssKeyword<"borderStyle">;
-  color?: StyleColor;
+  color?: StyleColor<M>;
 }>;
 
-type Layout = {
+type Layout<M extends Mode> = {
   display?: CssKeyword<"display">;
   position?: CssKeyword<"position">;
   boxSizing?: CssKeyword<"boxSizing">;
@@ -51,23 +69,23 @@ type Layout = {
   overflowX?: CssKeyword<"overflowX">;
   overflowY?: CssKeyword<"overflowY">;
 
-  padding?: Space;
-  paddingTop?: Space;
-  paddingRight?: Space;
-  paddingBottom?: Space;
-  paddingLeft?: Space;
-  paddingBlock?: Space;
-  paddingInline?: Space;
-  margin?: Margin;
-  marginTop?: Margin;
-  marginRight?: Margin;
-  marginBottom?: Margin;
-  marginLeft?: Margin;
-  marginBlock?: Margin;
-  marginInline?: Margin;
-  gap?: Space | CssKeyword<"gap">;
-  rowGap?: Space | CssKeyword<"rowGap">;
-  columnGap?: Space | CssKeyword<"columnGap">;
+  padding?: Space<M>;
+  paddingTop?: Space<M>;
+  paddingRight?: Space<M>;
+  paddingBottom?: Space<M>;
+  paddingLeft?: Space<M>;
+  paddingBlock?: Space<M>;
+  paddingInline?: Space<M>;
+  margin?: Margin<M>;
+  marginTop?: Margin<M>;
+  marginRight?: Margin<M>;
+  marginBottom?: Margin<M>;
+  marginLeft?: Margin<M>;
+  marginBlock?: Margin<M>;
+  marginInline?: Margin<M>;
+  gap?: Space<M> | CssKeyword<"gap">;
+  rowGap?: Space<M> | CssKeyword<"rowGap">;
+  columnGap?: Space<M> | CssKeyword<"columnGap">;
 
   flex?: number | CssKeyword<"flex">;
   flexDirection?: CssKeyword<"flexDirection">;
@@ -92,17 +110,23 @@ type Layout = {
   gridRow?: number | CssKeyword<"gridRow">;
 };
 
-type Typography = {
+type Typography<M extends Mode> = {
   fontFamily?: FontFamily | readonly [FontFamily, ...FontFamily[]];
   fontStyle?: CssKeyword<"fontStyle">;
-  fontWeight?: CssKeyword<"fontWeight"> | TokenReference<"fontWeight"> | Custom<number>;
-  fontSize?: LengthOrPercent | TokenReference<"fontSize">;
-  lineHeight?: number | LengthOrPercent | CssKeyword<"lineHeight">;
+  fontWeight?:
+    | CssKeyword<"fontWeight">
+    | TokenReference<"fontWeight">
+    | (M extends "free" ? number | Custom<number> : never);
+  fontSize?: TokenReference<"fontSize"> | (M extends "free" ? LengthOrPercent : never);
+  lineHeight?:
+    | TokenReference<"lineHeight">
+    | CssKeyword<"lineHeight">
+    | (M extends "free" ? number | LengthOrPercent : never);
   letterSpacing?: Length | CssKeyword<"letterSpacing">;
   textAlign?: CssKeyword<"textAlign">;
   textDecorationLine?: CssKeyword<"textDecorationLine">;
   textDecorationStyle?: CssKeyword<"textDecorationStyle">;
-  textDecorationColor?: StyleColor;
+  textDecorationColor?: StyleColor<M>;
   textOverflow?: CssKeyword<"textOverflow">;
   textTransform?: CssKeyword<"textTransform">;
   whiteSpace?: CssKeyword<"whiteSpace">;
@@ -110,29 +134,30 @@ type Typography = {
   wordBreak?: CssKeyword<"wordBreak">;
 };
 
-type Appearance = {
-  color?: StyleColor;
-  backgroundColor?: StyleColor;
+type Appearance<M extends Mode> = {
+  color?: StyleColor<M>;
+  backgroundColor?: StyleColor<M>;
   backgroundRepeat?: CssKeyword<"backgroundRepeat">;
   backgroundSize?: LengthOrPercent | CssKeyword<"backgroundSize">;
   backgroundPosition?: LengthOrPercent | CssKeyword<"backgroundPosition">;
   opacity?: number | Percent;
   objectFit?: CssKeyword<"objectFit">;
   objectPosition?: LengthOrPercent | CssKeyword<"objectPosition">;
-  borderRadius?: Radius;
-  borderTopLeftRadius?: Radius;
-  borderTopRightRadius?: Radius;
-  borderBottomLeftRadius?: Radius;
-  borderBottomRightRadius?: Radius;
-  outlineColor?: StyleColor;
+  boxShadow?: TokenReference<"shadow">;
+  borderRadius?: Radius<M>;
+  borderTopLeftRadius?: Radius<M>;
+  borderTopRightRadius?: Radius<M>;
+  borderBottomLeftRadius?: Radius<M>;
+  borderBottomRightRadius?: Radius<M>;
+  outlineColor?: StyleColor<M>;
   outlineStyle?: CssKeyword<"outlineStyle">;
   outlineWidth?: Length | CssKeyword<"outlineWidth">;
   outlineOffset?: Length;
-  border?: Border;
-  borderTop?: Border;
-  borderRight?: Border;
-  borderBottom?: Border;
-  borderLeft?: Border;
+  border?: Border<M>;
+  borderTop?: Border<M>;
+  borderRight?: Border<M>;
+  borderBottom?: Border<M>;
+  borderLeft?: Border<M>;
   visibility?: CssKeyword<"visibility">;
   cursor?: CssKeyword<"cursor">;
   pointerEvents?: CssKeyword<"pointerEvents">;
@@ -140,17 +165,20 @@ type Appearance = {
   appearance?: CssKeyword<"appearance">;
 };
 
-type Transition = ImportantDeclarations<{
-  property?: CssKeyword<"transitionProperty">;
-  duration?: Time;
-  delay?: Time;
+type TransitionProperty = CssKeyword<"transitionProperty">;
+type TransitionTarget = Exclude<TransitionProperty, "all" | "none">;
+
+type Transition<M extends Mode> = ImportantDeclarations<{
+  property?: TransitionProperty | readonly [TransitionTarget, ...TransitionTarget[]];
+  duration?: Duration<M>;
+  delay?: Duration<M>;
   ease?: TimingFunction;
 }>;
 
-type Animation = ImportantDeclarations<{
+type Animation<M extends Mode> = ImportantDeclarations<{
   name?: CssKeyword<"animationName"> | Custom<string>;
-  duration?: Time;
-  delay?: Time;
+  duration?: Duration<M>;
+  delay?: Duration<M>;
   ease?: TimingFunction;
   iterationCount?: number | CssKeyword<"animationIterationCount">;
   direction?: CssKeyword<"animationDirection">;
@@ -158,16 +186,23 @@ type Animation = ImportantDeclarations<{
   playState?: CssKeyword<"animationPlayState">;
 }>;
 
-type Motion = {
-  transition?: Transition;
-  animation?: Animation;
+type Motion<M extends Mode> = {
+  translate?: Translate;
+  transition?: Transition<M>;
+  animation?: Animation<M>;
 };
 
-export type Style = ImportantDeclarations<Layout & Typography & Appearance & Motion> &
+export type Style<
+  M extends Mode = ProjectMode,
+  InBreakpoint extends boolean = false,
+> = ImportantDeclarations<Layout<M> & Typography<M> & Appearance<M> & Motion<M>> &
   Readonly<{
     on?: Readonly<
-      Partial<Record<SimplePseudoClass, Style>> & {
-        breakpoint?: Readonly<Partial<Record<keyof typeof breakpoint, Style>>>;
-      }
+      Partial<Record<SimplePseudoClass, Style<M, InBreakpoint>>> &
+        (InBreakpoint extends true
+          ? { breakpoint?: never }
+          : {
+              breakpoint?: Readonly<Partial<Record<keyof typeof breakpoint, Style<M, true>>>>;
+            })
     >;
   }>;

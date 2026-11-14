@@ -4,10 +4,44 @@
   "type": "module",
   "license": "MIT",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./reset.css": {
+      "types": "./dist/reset-css.d.ts",
+      "default": "./reset.css"
+    }
   },
-  "files": ["src"],
+  "files": [
+    "dist",
+    "reset.css"
+  ],
+  "peerDependencies": {
+    "vite": "^8.3.8",
+    "vue": "^3.5.0",
+    "svelte": "^5.0.0",
+    "@astrojs/compiler": "^4.0.0"
+  },
   "dependencies": {
-    "alien": "workspace:*"
+    "magic-string": "^0.30.21",
+    "alien-compiler": "workspace:*"
+  },
+  "bin": {
+    "alien": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "@astrojs/compiler": {
+      "optional": true
+    }
   }
 }

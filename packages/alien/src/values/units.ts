@@ -8,7 +8,9 @@ export function percent(value: number): Percent {
   return { kind: "percent", value };
 }
 
-type Unit = "px" | "rem" | "em" | "ch" | "vw" | "vh" | "svh" | "dvh";
+export type Unit = "px" | "rem" | "em" | "ch" | "vw" | "vh" | "svh" | "dvh";
+
+export type LengthString = `${number}${Unit | "%"}`;
 
 type LengthLiteral<U extends Unit> = Readonly<{
   kind: "length";

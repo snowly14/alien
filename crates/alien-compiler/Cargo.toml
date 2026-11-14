@@ -1,6 +1,6 @@
 [package]
 name = "alien-compiler"
-description = "API unique du compilateur : analyse et orchestration du pipeline"
+description = "Compiler entry points and orchestration for Alien styles"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -15,3 +15,4 @@ alien-tokens.workspace = true
 alien-parser.workspace = true
 alien-ir.workspace = true
 alien-emit.workspace = true
+sha2 = "0.10"

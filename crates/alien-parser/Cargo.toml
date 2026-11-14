@@ -11,9 +11,12 @@ workspace = true
 
 [dependencies]
 alien-ir.workspace = true
+alien-tokens.workspace = true
 
 oxc_allocator = "=0.158.0"
 oxc_ast = "=0.158.0"
 oxc_ast_visit = "=0.158.0"
 oxc_parser = "=0.158.0"
 oxc_span = "=0.158.0"
+oxc_semantic = "=0.158.0"
+csscolorparser = "0.8"

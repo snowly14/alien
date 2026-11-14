@@ -1,6 +1,6 @@
 [package]
 name = "alien-emit"
-description = "Génération du CSS final et du code de remplacement (tokens, classes)"
+description = "CSS and JavaScript emission for compiled Alien styles"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -12,3 +12,4 @@ workspace = true
 [dependencies]
 alien-color.workspace = true
 alien-ir.workspace = true
+serde_json = "1"

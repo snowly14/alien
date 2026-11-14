@@ -1,0 +1,14 @@
+target/
+node_modules/
+dist/
+*.node
+.DS_Store
+.alien/
+*.tgz
+alien-env.d.ts
+*.alien.generated.ts
+*.alien.generated.js
+*.alien.generated.mts
+*.alien.generated.cts
+*.alien.generated.mjs
+*.alien.generated.cjs

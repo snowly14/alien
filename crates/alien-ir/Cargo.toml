@@ -1,6 +1,6 @@
 [package]
 name = "alien-ir"
-description = "Représentation intermédiaire des styles, indépendante de la source"
+description = "Source-independent intermediate representation of Alien styles"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

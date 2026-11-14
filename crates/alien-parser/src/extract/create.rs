@@ -53,6 +53,15 @@ pub(super) fn for_each_module_call<'source>(
 ) {
     // Direct initializers in the module share the scope of its imports.
     for statement in &program.body {
+        if let Statement::ExportDefaultDeclaration(export) = statement
+            && let Some(Expression::CallExpression(call)) = export
+                .declaration
+                .as_expression()
+                .map(Expression::get_inner_expression)
+        {
+            visit(call);
+            continue;
+        }
         let declaration = match statement {
             Statement::VariableDeclaration(declaration) => declaration,
             Statement::ExportDeclaration(export) => {

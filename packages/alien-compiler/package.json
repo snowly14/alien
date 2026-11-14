@@ -1,0 +1,26 @@
+{
+  "name": "alien-compiler",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "native/alien-*.node"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "alien": "./dist/cli.js"
+  },
+  "dependencies": {
+    "detect-libc": "2.1.2"
+  }
+}

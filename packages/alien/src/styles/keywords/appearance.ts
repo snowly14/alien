@@ -10,7 +10,13 @@ const lineStyle = {
   outset: "outset",
 } as const;
 const lineWidth = { thin: "thin", medium: "medium", thick: "thick" } as const;
-const position = { top: "top", right: "right", bottom: "bottom", left: "left", center: "center" } as const;
+const position = {
+  top: "top",
+  right: "right",
+  bottom: "bottom",
+  left: "left",
+  center: "center",
+} as const;
 
 export const appearanceKeywords = {
   color: { currentColor: "currentColor", transparent: "transparent" },
@@ -28,7 +34,13 @@ export const appearanceKeywords = {
   },
   backgroundSize: { auto: "auto", cover: "cover", contain: "contain" },
   backgroundPosition: position,
-  objectFit: { fill: "fill", contain: "contain", cover: "cover", none: "none", scaleDown: "scale-down" },
+  objectFit: {
+    fill: "fill",
+    contain: "contain",
+    cover: "cover",
+    none: "none",
+    scaleDown: "scale-down",
+  },
   objectPosition: position,
   visibility: { visible: "visible", hidden: "hidden", collapse: "collapse" },
   cursor: {

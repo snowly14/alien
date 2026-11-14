@@ -7,7 +7,13 @@ const intrinsicSize = {
 } as const;
 const size = { ...auto, ...intrinsicSize } as const;
 const maxSize = { none: "none", ...intrinsicSize } as const;
-const overflow = { visible: "visible", hidden: "hidden", clip: "clip", auto: "auto", scroll: "scroll" } as const;
+const overflow = {
+  visible: "visible",
+  hidden: "hidden",
+  clip: "clip",
+  auto: "auto",
+  scroll: "scroll",
+} as const;
 const alignPosition = {
   normal: "normal",
   center: "center",
@@ -17,7 +23,12 @@ const alignPosition = {
   flexEnd: "flex-end",
   stretch: "stretch",
 } as const;
-const alignItems = { ...alignPosition, baseline: "baseline", selfStart: "self-start", selfEnd: "self-end" } as const;
+const alignItems = {
+  ...alignPosition,
+  baseline: "baseline",
+  selfStart: "self-start",
+  selfEnd: "self-end",
+} as const;
 const distribution = {
   ...alignPosition,
   spaceBetween: "space-between",
@@ -42,7 +53,13 @@ export const layoutKeywords = {
     inlineTable: "inline-table",
     listItem: "list-item",
   },
-  position: { static: "static", relative: "relative", absolute: "absolute", fixed: "fixed", sticky: "sticky" },
+  position: {
+    static: "static",
+    relative: "relative",
+    absolute: "absolute",
+    fixed: "fixed",
+    sticky: "sticky",
+  },
   boxSizing: { contentBox: "content-box", borderBox: "border-box" },
   width: size,
   height: size,
@@ -61,7 +78,12 @@ export const layoutKeywords = {
   rowGap: normal,
   columnGap: normal,
   flex: { auto: "auto", none: "none" },
-  flexDirection: { row: "row", rowReverse: "row-reverse", column: "column", columnReverse: "column-reverse" },
+  flexDirection: {
+    row: "row",
+    rowReverse: "row-reverse",
+    column: "column",
+    columnReverse: "column-reverse",
+  },
   flexWrap: { nowrap: "nowrap", wrap: "wrap", wrapReverse: "wrap-reverse" },
   flexBasis: { ...size, content: "content" },
   alignItems,
@@ -73,7 +95,13 @@ export const layoutKeywords = {
   gridTemplateColumns: gridTemplate,
   gridTemplateRows: gridTemplate,
   gridTrack: { ...auto, minContent: "min-content", maxContent: "max-content" },
-  gridAutoFlow: { row: "row", column: "column", dense: "dense", rowDense: "row dense", columnDense: "column dense" },
+  gridAutoFlow: {
+    row: "row",
+    column: "column",
+    dense: "dense",
+    rowDense: "row dense",
+    columnDense: "column dense",
+  },
   gridColumn: auto,
   gridRow: auto,
 } as const;

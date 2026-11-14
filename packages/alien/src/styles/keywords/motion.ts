@@ -1,4 +1,5 @@
 export const motionKeywords = {
+  translate: { none: "none" },
   transitionProperty: {
     all: "all",
     none: "none",
@@ -14,6 +15,7 @@ export const motionKeywords = {
     opacity: "opacity",
     outlineColor: "outline-color",
     transform: "transform",
+    translate: "translate",
     width: "width",
   },
   timingFunction: {
@@ -27,7 +29,12 @@ export const motionKeywords = {
   },
   animationName: { none: "none" },
   animationIterationCount: { infinite: "infinite" },
-  animationDirection: { normal: "normal", reverse: "reverse", alternate: "alternate", alternateReverse: "alternate-reverse" },
+  animationDirection: {
+    normal: "normal",
+    reverse: "reverse",
+    alternate: "alternate",
+    alternateReverse: "alternate-reverse",
+  },
   animationFillMode: { none: "none", forwards: "forwards", backwards: "backwards", both: "both" },
   animationPlayState: { running: "running", paused: "paused" },
 } as const;

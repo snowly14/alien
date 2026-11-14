@@ -63,18 +63,31 @@ impl Oklch {
     pub const fn hue_component(self) -> Option<f32> {
         self.hue
     }
+
+    /// Writes the CSS color with an optional opacity expressed as a percentage.
+    ///
+    /// # Errors
+    /// Returns an error if the output writer fails.
+    pub fn write_css(
+        self,
+        output: &mut impl fmt::Write,
+        opacity_percent: Option<f64>,
+    ) -> fmt::Result {
+        write!(output, "oklch({} {} ", self.lightness, self.chroma)?;
+        match self.hue {
+            Some(hue) => write!(output, "{hue}")?,
+            None => output.write_str("none")?,
+        }
+        if let Some(opacity) = opacity_percent {
+            write!(output, "/{opacity}%")?;
+        }
+        output.write_char(')')
+    }
 }
 
 impl fmt::Display for Oklch {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.hue {
-            Some(hue) => write!(
-                formatter,
-                "oklch({} {} {})",
-                self.lightness, self.chroma, hue
-            ),
-            None => write!(formatter, "oklch({} {} none)", self.lightness, self.chroma),
-        }
+        self.write_css(formatter, None)
     }
 }
 

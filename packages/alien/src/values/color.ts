@@ -66,10 +66,7 @@ export type Color =
   | AlphaColor<Color>
   | MixedColor<Color, Color>;
 
-export type TokenColor =
-  | ColorToken
-  | AlphaColor<TokenColor>
-  | MixedColor<TokenColor, TokenColor>;
+export type TokenColor = ColorToken | AlphaColor<TokenColor> | MixedColor<TokenColor, TokenColor>;
 
 function isInRange(value: number, min: number, max: number): boolean {
   return Number.isFinite(value) && value >= min && value <= max;

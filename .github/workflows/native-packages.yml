@@ -1,0 +1,97 @@
+name: Native packages
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-15, binding: darwin-arm64 }
+          - { runner: macos-15-intel, binding: darwin-x64 }
+          - { runner: windows-2025, binding: win32-x64 }
+          - { runner: windows-11-arm, binding: win32-arm64 }
+          - { runner: ubuntu-22.04, binding: linux-x64-gnu }
+          - { runner: ubuntu-22.04-arm, binding: linux-arm64-gnu }
+          - { runner: ubuntu-24.04, binding: linux-x64-musl, musl: true }
+          - { runner: ubuntu-24.04-arm, binding: linux-arm64-musl, musl: true }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        if: ${{ !matrix.musl }}
+        with:
+          toolchain: 1.99.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.11.1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - run: bun run build:packages
+      - if: ${{ !matrix.musl }}
+        run: bun run build:native --release
+      - if: matrix.musl
+        shell: bash
+        env:
+          BINDING: ${{ matrix.binding }}
+        run: |
+          docker run --rm -e BINDING -e RUSTFLAGS="-C target-feature=-crt-static" \
+            -v "$PWD:/workspace" -w /workspace rust:1.99.0-alpine3.23 sh -ec '
+              apk add --no-cache build-base
+              cargo build --locked --release -p alien-napi --target-dir /tmp/alien-target
+              mkdir -p packages/alien-compiler/native
+              cp /tmp/alien-target/release/libalien_napi.so "packages/alien-compiler/native/alien-$BINDING.node"
+            '
+          docker run --rm -v "$PWD:/workspace:ro" -w /workspace node:26-alpine node scripts/smoke-native.mjs
+          docker run --rm -v "$PWD:/workspace:ro" -w /workspace oven/bun:1.4.3-alpine bun scripts/smoke-native.mjs
+      - if: ${{ !matrix.musl }}
+        run: node scripts/smoke-native.mjs
+      - if: ${{ !matrix.musl }}
+        run: bun run scripts/smoke-native.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alien-native-${{ matrix.binding }}
+          path: packages/alien-compiler/native/alien-${{ matrix.binding }}.node
+          if-no-files-found: error
+
+  packages:
+    needs: native
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.11.1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - run: bun run build:packages
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: alien-native-*
+          path: packages/alien-compiler/native
+          merge-multiple: true
+      - run: bun run scripts/test-package.ts
+      - shell: bash
+        run: |
+          mkdir -p "$PWD/release"
+          release_dir="$PWD/release"
+          for name in alien alien-compiler alien-vite alien-webpack; do
+            (cd "packages/$name" && bun pm pack --ignore-scripts --filename "$release_dir/$name.tgz")
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alien-npm-packages
+          path: release/*.tgz
+          if-no-files-found: error

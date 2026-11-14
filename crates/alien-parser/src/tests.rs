@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use alien_ir::{ColorToken, Condition, Declaration};
+use alien_ir::{ColorToken, ColorValue, Property, PseudoClass, Value};
 
 use crate::{extract::Expr, extract_styles, parse_styles};
 
@@ -17,10 +17,16 @@ fn extracts_the_button_fixture_into_ir() {
     for (rule, (expected_condition, expected_step)) in button
         .rules
         .iter()
-        .zip([(Condition::Base, 600), (Condition::Hover, 700)])
+        .zip([(None, 600), (Some(PseudoClass::Hover), 700)])
     {
-        assert_eq!(rule.condition, expected_condition);
-        let Declaration::BackgroundColor(ColorToken::Shade { palette, step }) = &rule.declaration
+        assert_eq!(
+            rule.condition.pseudo_classes.iter().next(),
+            expected_condition
+        );
+        assert!(rule.condition.breakpoint.is_none());
+        assert_eq!(rule.declaration.property, Property::BackgroundColor);
+        let Value::Color(ColorValue::Token(ColorToken::Shade { palette, step })) =
+            &rule.declaration.value
         else {
             panic!("expected a palette shade");
         };
@@ -98,10 +104,10 @@ fn raw_extraction_keeps_values_beyond_the_compiler_subset() {
 fn reports_unsupported_style_properties_with_a_source_range() {
     let source = r#"
         import { alien } from "alien";
-        const styles = alien.create({ caption: { opacity: 0.5 } });
+        const styles = alien.create({ caption: { content: "hello" } });
     "#;
     let errors = parse_styles(source, Path::new("caption.ts")).unwrap_err();
 
-    assert!(errors[0].contains("style `caption`: unsupported style property `opacity`"));
+    assert!(errors[0].contains("style `caption`: unsupported style property `content`"));
     assert!(errors[0].contains("bytes"));
 }

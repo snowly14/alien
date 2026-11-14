@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url";
 import { expect, test } from "bun:test";
+import { fileURLToPath } from "node:url";
 import { tokens } from "alien";
 
 test("every built-in token path exists in both Rust and TypeScript", () => {

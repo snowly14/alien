@@ -1,4 +1,6 @@
+import type { ProjectTokenNames } from "../config";
 import type { ColorToken } from "../values/color";
+import { withProjectTokens } from "./reference";
 
 const shadeSteps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
 const paletteNames = [
@@ -64,4 +66,7 @@ function builtinColors(): BuiltinColors {
   return colors as BuiltinColors;
 }
 
-export const color = /* @__PURE__ */ builtinColors();
+export type ProjectColors = BuiltinColors &
+  Readonly<Record<ProjectTokenNames<"color">, ColorToken>>;
+
+export const color: ProjectColors = /* @__PURE__ */ withProjectTokens("color", builtinColors());

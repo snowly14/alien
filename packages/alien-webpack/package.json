@@ -1,0 +1,14 @@
+{
+  "name": "alien-webpack",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": {"types": "./dist/index.d.ts", "default": "./dist/index.js"},
+    "./loader": "./dist/loader.js"
+  },
+  "files": ["dist"],
+  "dependencies": {"alien-compiler": "workspace:*", "magic-string": "^0.30.21"},
+  "peerDependencies": {"webpack": "^5.0.0"},
+  "engines": {"node": ">=22"}
+}

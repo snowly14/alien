@@ -9,12 +9,30 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: 1.99.0
           components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.11.1
       - uses: Swatinem/rust-cache@v2
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
       - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun run check
       - run: bun run test
+      - run: bun run demo:build
+      - run: bun run test:package
+      - run: bun run test:frameworks
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.97.0
+      - run: cargo +1.97.0 check --workspace --locked

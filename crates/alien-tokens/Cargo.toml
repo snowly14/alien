@@ -1,6 +1,6 @@
 [package]
 name = "alien-tokens"
-description = "Tokens : default values, merging with the user's values, resolving references"
+description = "Built-in design tokens and token resolution for Alien"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

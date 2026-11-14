@@ -4,7 +4,7 @@ mod diagnostic;
 pub mod extract;
 pub mod typescript;
 
-use std::path::Path;
+use std::{ops::Range, path::Path};
 
 use alien_ir::Style;
 use oxc_allocator::Allocator;
@@ -42,5 +42,47 @@ pub fn parse_styles(source: &str, path: &Path) -> Result<Vec<Style>, Vec<String>
     extract::lower_module(&program)
 }
 
+/// Styles and source byte offsets for one `alien.create()` call.
+#[derive(Debug)]
+pub struct StyleBlock {
+    pub span: Range<usize>,
+    pub styles: Vec<Style>,
+}
+
+/// Reads the style calls in a module while retaining their source ranges.
+///
+/// # Errors
+///
+/// Returns diagnostics for invalid source or unsupported style declarations.
+pub fn parse_style_blocks(source: &str, path: &Path) -> Result<Vec<StyleBlock>, Vec<String>> {
+    let allocator = Allocator::default();
+    let program = typescript::parse_file(&allocator, source, path)?;
+    extract::lower_blocks(&program, alien_ir::Mode::Free)
+}
+
 #[cfg(test)]
 mod tests;
+
+/// Reads styles using the configured design-system policy.
+///
+/// # Errors
+/// Returns diagnostics for invalid or unsupported source.
+pub fn parse_style_blocks_with_mode(
+    source: &str,
+    path: &Path,
+    mode: alien_ir::Mode,
+) -> Result<Vec<StyleBlock>, Vec<String>> {
+    let allocator = Allocator::default();
+    let program = typescript::parse_file(&allocator, source, path)?;
+    extract::lower_blocks(&program, mode)
+}
+
+/// Statically reads an `alien.globals()` configuration without executing JavaScript.
+///
+/// # Errors
+/// Returns diagnostics for invalid configuration.
+pub fn parse_globals(source: &str, path: &Path) -> Result<alien_ir::GlobalConfig, Vec<String>> {
+    let allocator = Allocator::default();
+    let program = typescript::parse_file(&allocator, source, path)?;
+    extract::globals::lower(&program).map_err(|error| vec![error])
+}
