@@ -14,3 +14,15 @@ test("normalizes HTML whitespace and keeps the last occurrence of each class", (
   expect(cx("red", "blue")).toBe("red blue");
   expect(cx("non\u00a0breaking")).toBe("non\u00a0breaking");
 });
+
+test("public cx resolves atomic properties while keeping unrelated classes and conditions", () => {
+  const first = [
+    { property: "color", condition: "", className: "red" },
+    { property: "padding-top", condition: "", className: "pad" },
+    { property: "color", condition: ":hover", className: "hover-red" },
+  ];
+  const second = [{ property: "color", condition: "", className: "blue" }];
+  expect(cx("external", first, false, second)).toBe("external pad hover-red blue");
+  expect(cx(second, first)).toBe("red pad hover-red");
+  expect(first).toHaveLength(3);
+});
