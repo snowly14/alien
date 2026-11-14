@@ -185,6 +185,30 @@ const percentageResults: {
   savingsPercent: number;
 }[] = [];
 const number = (value: number) => value.toLocaleString("en-US");
+const winners = scenarios.map(({ name }) => {
+  const results = rows.filter((row) => row.scenario === name);
+  return {
+    scenario: name,
+    metrics: Object.fromEntries(
+      metrics.map((metric) => {
+        const smallest = Math.min(...results.map((row) => row[metric]));
+        return [metric, results.filter((row) => row[metric] === smallest).map((row) => row.tool)];
+      }),
+    ) as Record<(typeof metrics)[number], string[]>,
+  };
+});
+const scoreboard = ["Alien", "Tailwind", "StyleX"].map((tool) => ({
+  tool,
+  wins: Object.fromEntries(
+    metrics.map((metric) => [
+      metric,
+      winners.filter((result) => result.metrics[metric].includes(tool)).length,
+    ]),
+  ),
+}));
+const summaryMarkdown = `## Winners at a glance\n\nSmallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS size, not overall framework quality.\n\n| Scenario | Minified CSS winner | gzip winner | Brotli winner |\n| --- | --- | --- | --- |\n${winners.map((result) => `| ${result.scenario} | ${metrics.map((metric) => result.metrics[metric].join(" / ")).join(" | ")} |`).join("\n")}\n\n| Tool | Minified wins | gzip wins | Brotli wins |\n| --- | ---: | ---: | ---: |\n${scoreboard.map((result) => `| ${result.tool} | ${metrics.map((metric) => `${result.wins[metric]}/${scenarios.length}`).join(" | ")} |`).join("\n")}\n`;
+const summaryHtml = `<section><h2>Winners at a glance</h2><p>Smallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS size, not overall framework quality.</p><div class="table"><table><thead><tr><th>Scenario</th><th>Minified winner</th><th>gzip winner</th><th>Brotli winner</th></tr></thead><tbody>${winners.map((result) => `<tr><th scope="row">${result.scenario}</th>${metrics.map((metric) => `<td class="best">${result.metrics[metric].join(" / ")}</td>`).join("")}</tr>`).join("")}</tbody></table></div><h2>Scenario wins</h2><div class="table"><table><thead><tr><th>Tool</th><th>Minified</th><th>gzip</th><th>Brotli</th></tr></thead><tbody>${scoreboard.map((result) => `<tr><th scope="row">${result.tool}</th>${metrics.map((metric) => `<td>${result.wins[metric]}/${scenarios.length}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+
 const introduction = `Matching style declarations compiled with Alien, Tailwind ${versions.tailwind}, and StyleX ${versions.stylex}. Lower is better; all sizes are in bytes. Bold values mark the smallest output in each scenario.
 
 Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS ${require("lightningcss/package.json").version}, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.`;
@@ -193,15 +217,24 @@ let markdown = `# CSS size comparison
 Run \`bun run bench:css\` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files.
 
 ${introduction}
+
+${summaryMarkdown}
 `;
-let sections = "";
+let sections = summaryHtml;
 for (const { name } of scenarios) {
   const results = rows.filter((row) => row.scenario === name);
   const minimum = Object.fromEntries(
     metrics.map((metric) => [metric, Math.min(...results.map((row) => row[metric]))]),
   );
+  const ranking = winners.find((result) => result.scenario === name);
+  if (!ranking) throw new Error(`Missing ranking: ${name}`);
+  const winnerText = metrics
+    .map((metric) => `${metric}: ${ranking.metrics[metric].join(" / ")}`)
+    .join(" · ");
   markdown += `
 ## ${name}
+
+**Winners — ${winnerText}**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
@@ -229,7 +262,7 @@ for (const { name } of scenarios) {
     }
   }
   markdown += `\n${comparisons.map((line) => `- ${line}`).join("\n")}\n`;
-  sections += `<section><h2>${name}</h2><div class="table"><table><thead><tr><th scope="col">Tool / CSS file</th><th scope="col">Minified CSS</th><th scope="col">gzip</th><th scope="col">Brotli</th></tr></thead><tbody>${table}</tbody></table></div><p>Relative to each competitor: ${comparisons.join("<br>")}</p></section>`;
+  sections += `<section><h2>${name}</h2><p><strong>Winners — ${winnerText}</strong></p><div class="table"><table><thead><tr><th scope="col">Tool / CSS file</th><th scope="col">Minified CSS</th><th scope="col">gzip</th><th scope="col">Brotli</th></tr></thead><tbody>${table}</tbody></table></div><p>Relative to each competitor: ${comparisons.join("<br>")}</p></section>`;
   console.log(`\n${name} — bytes, lower is better`);
   console.table(results.map(({ scenario: _, ...result }) => result));
 }
@@ -243,7 +276,7 @@ Alien preserves declaration order. Independent transforms retain module-specific
 await writeFile(new URL("../css-benchmark.md", outputDirectory), markdown);
 await writeFile(
   new URL("results.json", outputDirectory),
-  `${JSON.stringify({ versions: { ...versions, lightningcss: require("lightningcss/package.json").version }, compression: { gzip: 9, brotli: 11 }, alienCompilation: "whole-project", percentageResults, rows }, null, 2)}\n`,
+  `${JSON.stringify({ versions: { ...versions, lightningcss: require("lightningcss/package.json").version }, compression: { gzip: 9, brotli: 11 }, alienCompilation: "whole-project", percentageResults, winners, scoreboard, rows }, null, 2)}\n`,
 );
 await writeFile(
   new URL("index.html", outputDirectory),

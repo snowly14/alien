@@ -6,7 +6,29 @@ Matching style declarations compiled with Alien, Tailwind 4.3.5, and StyleX 0.19
 
 Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS 1.33.0, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.
 
+## Winners at a glance
+
+Smallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS size, not overall framework quality.
+
+| Scenario | Minified CSS winner | gzip winner | Brotli winner |
+| --- | --- | --- | --- |
+| One button | Alien | Alien | Alien |
+| Button with focus and breakpoint | Alien | Alien | Alien |
+| 100 alternating color variants | StyleX | StyleX | StyleX |
+| 100 cards and buttons, one module | Tailwind | Alien | Alien |
+| 100 cards and buttons, 20 modules | Tailwind | Alien | Alien |
+| 100 distinct width/height pairs | StyleX | Alien | Alien |
+
+| Tool | Minified wins | gzip wins | Brotli wins |
+| --- | ---: | ---: | ---: |
+| Alien | 2/6 | 5/6 | 5/6 |
+| Tailwind | 2/6 | 0/6 | 0/6 |
+| StyleX | 2/6 | 1/6 | 1/6 |
+
+
 ## One button
+
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
@@ -19,6 +41,8 @@ Tailwind uses its standard theme without Preflight. All outputs use Lightning CS
 
 ## Button with focus and breakpoint
 
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
+
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
 | Alien | **346** | **230** | **154** |
@@ -29,6 +53,8 @@ Tailwind uses its standard theme without Preflight. All outputs use Lightning CS
 - Alien vs StyleX — minified: 30.1% smaller, gzip: 20.1% smaller, brotli: 30.6% smaller
 
 ## 100 alternating color variants
+
+**Winners — minified: StyleX · gzip: StyleX · brotli: StyleX**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
@@ -41,6 +67,8 @@ Tailwind uses its standard theme without Preflight. All outputs use Lightning CS
 
 ## 100 cards and buttons, one module
 
+**Winners — minified: Tailwind · gzip: Alien · brotli: Alien**
+
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
 | Alien | 8,040 | **742** | **426** |
@@ -52,6 +80,8 @@ Tailwind uses its standard theme without Preflight. All outputs use Lightning CS
 
 ## 100 cards and buttons, 20 modules
 
+**Winners — minified: Tailwind · gzip: Alien · brotli: Alien**
+
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
 | Alien | 8,044 | **743** | **424** |
@@ -62,6 +92,8 @@ Tailwind uses its standard theme without Preflight. All outputs use Lightning CS
 - Alien vs StyleX — minified: 49.7% larger, gzip: 33.1% smaller, brotli: 49.9% smaller
 
 ## 100 distinct width/height pairs
+
+**Winners — minified: StyleX · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |

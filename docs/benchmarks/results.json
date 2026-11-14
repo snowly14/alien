@@ -227,6 +227,118 @@
       "savingsPercent": 68.69275603663614
     }
   ],
+  "winners": [
+    {
+      "scenario": "One button",
+      "metrics": {
+        "minified": [
+          "Alien"
+        ],
+        "gzip": [
+          "Alien"
+        ],
+        "brotli": [
+          "Alien"
+        ]
+      }
+    },
+    {
+      "scenario": "Button with focus and breakpoint",
+      "metrics": {
+        "minified": [
+          "Alien"
+        ],
+        "gzip": [
+          "Alien"
+        ],
+        "brotli": [
+          "Alien"
+        ]
+      }
+    },
+    {
+      "scenario": "100 alternating color variants",
+      "metrics": {
+        "minified": [
+          "StyleX"
+        ],
+        "gzip": [
+          "StyleX"
+        ],
+        "brotli": [
+          "StyleX"
+        ]
+      }
+    },
+    {
+      "scenario": "100 cards and buttons, one module",
+      "metrics": {
+        "minified": [
+          "Tailwind"
+        ],
+        "gzip": [
+          "Alien"
+        ],
+        "brotli": [
+          "Alien"
+        ]
+      }
+    },
+    {
+      "scenario": "100 cards and buttons, 20 modules",
+      "metrics": {
+        "minified": [
+          "Tailwind"
+        ],
+        "gzip": [
+          "Alien"
+        ],
+        "brotli": [
+          "Alien"
+        ]
+      }
+    },
+    {
+      "scenario": "100 distinct width/height pairs",
+      "metrics": {
+        "minified": [
+          "StyleX"
+        ],
+        "gzip": [
+          "Alien"
+        ],
+        "brotli": [
+          "Alien"
+        ]
+      }
+    }
+  ],
+  "scoreboard": [
+    {
+      "tool": "Alien",
+      "wins": {
+        "minified": 2,
+        "gzip": 5,
+        "brotli": 5
+      }
+    },
+    {
+      "tool": "Tailwind",
+      "wins": {
+        "minified": 2,
+        "gzip": 0,
+        "brotli": 0
+      }
+    },
+    {
+      "tool": "StyleX",
+      "wins": {
+        "minified": 2,
+        "gzip": 1,
+        "brotli": 1
+      }
+    }
+  ],
   "rows": [
     {
       "scenario": "One button",
