@@ -7,6 +7,17 @@ import { compile } from "@tailwindcss/node";
 import { transform } from "lightningcss";
 import { loadCompiler, type ProjectInput } from "../packages/alien-compiler/src/native.ts";
 
+import {
+  checkAdvantages,
+  formatSavings,
+  type Measurement,
+  metrics,
+  parseBenchmarkOptions,
+  savingsPercent,
+} from "./benchmark-metrics.ts";
+
+const options = parseBenchmarkOptions(process.argv.slice(2));
+
 type Declaration = [property: string, value: string, candidate: string, condition?: "focus" | "md"];
 const button: Declaration[] = [
   ["display", "inline-flex", "inline-flex"],
@@ -71,7 +82,7 @@ const versions = {
   tailwind: require("tailwindcss/package.json").version,
   stylex: require("@stylexjs/babel-plugin/package.json").version,
 };
-type Result = { scenario: string; tool: string; minified: number; gzip: number; brotli: number };
+type Result = Measurement;
 const rows: Result[] = [];
 const artifactName = (name: string, tool: string) =>
   `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${tool.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.css`;
@@ -177,7 +188,6 @@ for (const { name, styles, stylesPerModule = styles.length } of scenarios) {
     });
   }
 }
-const metrics = ["minified", "gzip", "brotli"] as const;
 const percentageResults: {
   scenario: string;
   competitor: string;
@@ -214,7 +224,7 @@ const introduction = `Matching style declarations compiled with Alien, Tailwind 
 Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS ${require("lightningcss/package.json").version}, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.`;
 let markdown = `# CSS size comparison
 
-Run \`bun run bench:css\` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files.
+Run \`bun run bench:css\` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Use \`bun run bench:css --check\` to require outright Alien wins on all three metrics; \`--check=brotli --min-savings=20\` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
 
 ${introduction}
 
@@ -249,14 +259,14 @@ for (const { name } of scenarios) {
   for (const alien of results.filter((row) => row.tool === "Alien")) {
     for (const rival of results.filter((row) => row.tool === "Tailwind" || row.tool === "StyleX")) {
       const parts = metrics.map((metric) => {
-        const difference = ((rival[metric] - alien[metric]) / rival[metric]) * 100;
+        const difference = savingsPercent(alien[metric], rival[metric]);
         percentageResults.push({
           scenario: name,
           competitor: rival.tool,
           metric,
           savingsPercent: difference,
         });
-        return `${metric}: ${Math.abs(difference).toFixed(1)}% ${difference > 0 ? "smaller" : difference < 0 ? "larger" : "equal"}`;
+        return `${metric}: ${formatSavings(difference)}`;
       });
       comparisons.push(`${alien.tool} vs ${rival.tool} — ${parts.join(", ")}`);
     }
@@ -265,6 +275,8 @@ for (const { name } of scenarios) {
   sections += `<section><h2>${name}</h2><p><strong>Winners — ${winnerText}</strong></p><div class="table"><table><thead><tr><th scope="col">Tool / CSS file</th><th scope="col">Minified CSS</th><th scope="col">gzip</th><th scope="col">Brotli</th></tr></thead><tbody>${table}</tbody></table></div><p>Relative to each competitor: ${comparisons.join("<br>")}</p></section>`;
   console.log(`\n${name} — bytes, lower is better`);
   console.table(results.map(({ scenario: _, ...result }) => result));
+  console.log(`Winners — ${winnerText}`);
+  for (const comparison of comparisons) console.log(comparison);
 }
 markdown += `
 ## Reading the results
@@ -287,3 +299,28 @@ await writeFile(
 </style><header><div class="eyebrow">Reproducible benchmark</div><h1>How much CSS gets shipped?</h1><p>${introduction.replaceAll("\n\n", "</p><p>")}</p><p><code>bun run bench:css</code> · <a href="results.json">Download JSON</a> · Click a tool name to inspect its CSS.</p></header>${sections}<footer>Compare gzip or Brotli for transfer size. Alien evaluates CSS plus generated class-map size; this report measures CSS only. Module boundaries, composition, code splitting, and real application content can change the ranking. Framework compatibility and universal superiority are not established by these measurements.</footer></html>`,
 );
 console.log("\nReports: docs/css-benchmark.md and docs/benchmarks/index.html");
+
+console.log("\nSCENARIO WINS — smallest CSS; ties credit all tied tools");
+console.table(
+  scoreboard.map(({ tool, wins }) => ({
+    tool,
+    ...Object.fromEntries(metrics.map((metric) => [metric, `${wins[metric]}/${scenarios.length}`])),
+  })),
+);
+console.log(
+  "Percentages compare Alien against each competitor: smaller is a win, larger is a loss.",
+);
+if (options.check) {
+  const selected = options.check === "all" ? metrics : [options.check];
+  const failures = checkAdvantages(rows, selected, options.minimumSavings);
+  if (failures.length) {
+    console.error(
+      `\nFAIL: Alien does not win every scenario on ${selected.join(", ")} with at least ${options.minimumSavings}% savings.`,
+    );
+    console.table(failures);
+    process.exitCode = 1;
+  } else
+    console.log(
+      `\nPASS: Alien wins all ${scenarios.length} scenarios on ${selected.join(", ")} with at least ${options.minimumSavings}% savings.`,
+    );
+}

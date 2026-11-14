@@ -8,7 +8,7 @@
   "scripts": {
     "check": "cargo check --workspace && bun run prepare:demo && tsc --noEmit && tsc --noEmit -p examples/react/tsconfig.json",
     "lint": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && biome check .",
-    "test": "cargo test --workspace && bun run build:packages && bun run build:native && bun test packages",
+    "test": "cargo test --workspace && bun run build:packages && bun run build:native && bun test packages scripts/benchmark-metrics.test.ts",
     "demo:native": "bun run build:packages && bun run build:native",
     "demo": "bun run demo:native && bun run --cwd examples/react dev",
     "demo:build": "bun run demo:native && bun run --cwd examples/react build",

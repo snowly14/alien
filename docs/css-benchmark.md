@@ -1,6 +1,6 @@
 # CSS size comparison
 
-Run `bun run bench:css` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files.
+Run `bun run bench:css` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Use `bun run bench:css --check` to require outright Alien wins on all three metrics; `--check=brotli --min-savings=20` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
 
 Matching style declarations compiled with Alien, Tailwind 4.3.5, and StyleX 0.19.2. Lower is better; all sizes are in bytes. Bold values mark the smallest output in each scenario.
 
