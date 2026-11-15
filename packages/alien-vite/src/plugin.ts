@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { moduleIdentity, projectNamespace } from "alien-compiler";
+import { moduleIdentity, projectNamespace } from "@alien-css/compiler";
 import MagicString from "magic-string";
 import { normalizePath, type Plugin, type ViteDevServer } from "vite";
 import { isSupported, type ModuleStyles, transformModule } from "./components.ts";
@@ -123,7 +123,7 @@ export default function alien(options: AlienOptions = {}): Plugin {
           return null;
         if (path === globalsPath) {
           this.error(
-            "Do not import alien.globals.ts at runtime. Import alien and tokens from 'alien'; the plugin loads configuration statically.",
+            "Do not import alien.globals.ts at runtime. Import alien and tokens from '@alien-css/core'; the plugin loads configuration statically.",
           );
         }
         const { moduleId, cssId } = identify(path);
@@ -151,7 +151,8 @@ export default function alien(options: AlienOptions = {}): Plugin {
       },
     },
     resolveId(id) {
-      if (id === "alien-vite/reset.css") return `\0${resetId}`;
+      if (id === "@alien-css/vite/reset.css" || id === "alien-vite/reset.css")
+        return `\0${resetId}`;
       if (id === resetUrl || id.startsWith(`${resetUrl}?`)) {
         return `\0${resetId}${id.slice(resetUrl.length)}`;
       }

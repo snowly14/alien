@@ -13,6 +13,7 @@ pub struct CssDeclaration<'value> {
 }
 
 /// A resolved value ready for CSS serialization.
+#[derive(Clone)]
 pub enum CssValue<'value> {
     Color(Oklch, Option<f64>),
     ColorFunction(&'static str, [f64; 3]),

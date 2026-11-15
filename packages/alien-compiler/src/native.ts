@@ -10,6 +10,8 @@ export type NativeCompiler = {
   readonly reset: "light" | "medium" | "strong" | null | undefined;
   readonly tokenPaths: string[];
   transformProject(sources: ProjectInput[]): TransformedProject;
+  /** Experimental; use strongIsolation to obtain the longer 128-bit prefix. */
+  transformAtomicProject(sources: ProjectInput[], strongIsolation?: boolean): TransformedProject;
   transform(source: string, path: string, moduleId: string): TransformedModule | null;
 };
 type NativeBinding = { Compiler: new (source?: string, path?: string) => NativeCompiler };

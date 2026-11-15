@@ -370,7 +370,7 @@ fn improve_plan(model: &CostModel<'_>, mut selected: u64, all: u64) -> u64 {
     }
 }
 
-fn size(output: &CompiledStyles) -> usize {
+pub(crate) fn size(output: &CompiledStyles) -> usize {
     let mut javascript = String::new();
     write_class_map(&mut javascript, &output.classes);
     output.css.len() + javascript.len()

@@ -13,7 +13,7 @@ import alien from "../src/plugin.ts";
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 const entryPoint = join(repository, "packages/alien/src/index.ts");
 const styles =
-  'import {alien,tokens} from "alien";const title="👽";const styles=alien.create({button:{color:tokens.color.brand}});';
+  'import {alien,tokens} from "@alien-css/core";const title="👽";const styles=alien.create({button:{color:tokens.color.brand}});';
 const cases: { name: string; file: string; source: string; plugins: () => PluginOption[] }[] = [
   {
     name: "React JSX",
@@ -52,7 +52,7 @@ for (const fixture of cases)
       );
       await writeFile(
         join(root, "alien.globals.ts"),
-        'import {alien} from "alien";alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"}});',
+        'import {alien} from "@alien-css/core";alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"}});',
       );
       await writeFile(join(root, fixture.file), fixture.source);
       const outputs: { css: string; js: string }[] = [];
@@ -62,7 +62,7 @@ for (const fixture of cases)
           root,
           logLevel: "silent",
           plugins: [alien({ namespace: "framework-fixture" }), ...fixture.plugins()],
-          resolve: { alias: [{ find: /^alien$/, replacement: entryPoint }] },
+          resolve: { alias: [{ find: /^@alien-css\/core$/, replacement: entryPoint }] },
           build: {
             write: false,
             minify: false,

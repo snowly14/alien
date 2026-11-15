@@ -3,4 +3,4 @@ export {
   type NativeCompiler,
   type SourceEdit,
   type TransformedModule,
-} from "alien-compiler";
+} from "@alien-css/compiler";

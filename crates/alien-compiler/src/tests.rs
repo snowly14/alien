@@ -1,5 +1,17 @@
 use std::path::Path;
 
+#[test]
+fn compiles_published_npm_imports() {
+    let source = r#"
+        import { alien } from "@alien-css/core";
+        import { px } from "@alien-css/core/values";
+        export const styles = alien.create({ item: { width: px(12), color: "red" } });
+    "#;
+    let output = compile_typescript(source, Path::new("scoped.ts")).unwrap();
+    assert!(output.css.contains("width:12px"));
+    assert!(output.css.contains("color:red"));
+}
+
 use crate::{CompileError, compile_typescript, transform_typescript};
 
 #[test]
@@ -608,6 +620,164 @@ fn shares_adjacent_identical_styles_without_reordering_the_cascade() {
         output.css,
         ".a0{display:flex}.a2{display:grid}.a3{display:flex}"
     );
+}
+
+#[test]
+fn shares_identical_styles_across_unrelated_rules_but_not_conflicts() {
+    let source = r#"
+        import { alien } from "alien";
+        const styles = alien.create({
+            first: { color: "red", on: { hover: { color: "blue" } } },
+            unrelated: { width: "10px" },
+            second: { color: "red", on: { hover: { color: "blue" } } },
+            conflict: { on: { hover: { color: "green" } } },
+            third: { color: "red", on: { hover: { color: "blue" } } },
+        });
+    "#;
+    let output = compile_typescript(source, Path::new("test.ts")).unwrap();
+    assert_eq!(output.classes["first"], output.classes["second"]);
+    assert_ne!(output.classes["second"], output.classes["third"]);
+    assert_eq!(output.css.matches("color:red").count(), 2);
+    assert!(output.css.find("color:green").unwrap() < output.css.rfind("color:blue").unwrap());
+}
+
+#[test]
+fn shorthand_conflicts_prevent_sharing_across_intervening_styles() {
+    let source = r#"
+        import { alien } from "alien";
+        const styles = alien.create({
+            first: { paddingLeft: "1px" },
+            conflict: { padding: "2px" },
+            second: { paddingLeft: "1px" },
+        });
+    "#;
+    let output = compile_typescript(source, Path::new("test.ts")).unwrap();
+    assert_ne!(output.classes["first"], output.classes["second"]);
+    assert_eq!(output.css.matches("padding-left:1px").count(), 2);
+}
+
+#[test]
+fn shared_style_classes_preserve_cascade_for_every_combination() {
+    let source = r#"
+        import { alien } from "alien";
+        const styles = alien.create({
+            a: { color: "red" }, b: { width: "1px" },
+            c: { color: "red" }, d: { color: "blue" }, e: { color: "red" },
+        });
+    "#;
+    let output = compile_typescript(source, Path::new("test.ts")).unwrap();
+    let styles = [
+        ("a", Some("red")),
+        ("b", None),
+        ("c", Some("red")),
+        ("d", Some("blue")),
+        ("e", Some("red")),
+    ];
+    for mask in 0..1usize << styles.len() {
+        let expected = styles
+            .iter()
+            .enumerate()
+            .filter_map(
+                |(i, (_, value))| {
+                    if mask & (1 << i) != 0 { *value } else { None }
+                },
+            )
+            .next_back();
+        let selected: Vec<_> = styles
+            .iter()
+            .enumerate()
+            .filter_map(|(i, (name, _))| {
+                (mask & (1 << i) != 0).then_some(output.classes[*name].as_str())
+            })
+            .collect();
+        let actual = output
+            .css
+            .split('}')
+            .filter_map(|rule| {
+                let (selector, declarations) = rule.split_once('{')?;
+                if !selected.contains(&selector.strip_prefix('.')?) {
+                    return None;
+                }
+                declarations
+                    .split(';')
+                    .find_map(|declaration| declaration.strip_prefix("color:"))
+            })
+            .next_back();
+        assert_eq!(actual, expected, "style combination {mask:b}");
+    }
+}
+
+#[test]
+fn shares_adjacent_styles_across_project_modules_without_crossing_conflicts() {
+    use crate::{ProjectSource, transform_project};
+    use alien_ir::GlobalConfig;
+
+    let sources = [
+        ("first.ts", "flex"),
+        ("second.ts", "flex"),
+        ("third.ts", "grid"),
+        ("fourth.ts", "flex"),
+    ];
+    let code: Vec<_> = sources.iter().map(|(_, display)| format!(
+        "import {{ alien }} from 'alien'; export const styles = alien.create({{ item: {{ display: '{display}' }} }});"
+    )).collect();
+    let inputs: Vec<_> = sources
+        .iter()
+        .zip(&code)
+        .map(|((path, _), source)| ProjectSource {
+            source,
+            path: Path::new(path),
+            module_id: path,
+        })
+        .collect();
+    let output = transform_project(&inputs, &GlobalConfig::default()).unwrap();
+    assert_eq!(output.css.matches("display:flex").count(), 2);
+    assert_eq!(output.css.matches("display:grid").count(), 1);
+    assert!(output.css.find("display:grid").unwrap() > output.css.find("display:flex").unwrap());
+    assert!(output.css.rfind("display:flex").unwrap() > output.css.find("display:grid").unwrap());
+    assert_eq!(output.modules[0].code, output.modules[1].code);
+    assert_ne!(output.modules[0].code, output.modules[3].code);
+}
+
+#[test]
+fn experimental_atomic_project_reuses_rules_across_modules_and_rewrites_descriptors() {
+    use crate::{ProjectSource, transform_atomic_project};
+    use alien_ir::GlobalConfig;
+
+    let sources = [
+        (
+            "one.ts",
+            "import {alien} from 'alien'; export const a = alien.create({ red: {color:'red'}, blue: {color:'blue'} });",
+        ),
+        (
+            "two.ts",
+            "import {alien} from 'alien'; export const b = alien.create({ red: {color:'red'} });",
+        ),
+    ];
+    let inputs: Vec<_> = sources
+        .iter()
+        .map(|(path, source)| ProjectSource {
+            source,
+            path: Path::new(path),
+            module_id: path,
+        })
+        .collect();
+    let result = transform_atomic_project(&inputs, &GlobalConfig::default()).unwrap();
+    assert_eq!(result.css.matches("color:red").count(), 1);
+    assert_eq!(result.css.matches("color:blue").count(), 1);
+    assert!(result.modules[0].code.contains("~color"));
+    let class = result
+        .css
+        .split('{')
+        .next()
+        .unwrap()
+        .trim_start_matches('.');
+    assert!(
+        result.modules[1]
+            .code
+            .contains(&format!("\"{class}~color\""))
+    );
+    assert_eq!(result.modules[1].edits.len(), 1);
 }
 
 #[test]

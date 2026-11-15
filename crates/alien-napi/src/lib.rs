@@ -1,8 +1,8 @@
 #![doc = env!("CARGO_PKG_DESCRIPTION")]
 
 use alien_compiler::{
-    ProjectSource, TransformedModule, compile_globals, transform_project, transform_typescript,
-    transform_with_config,
+    ProjectSource, TransformedModule, compile_globals, transform_atomic_project_with_isolation,
+    transform_project, transform_typescript, transform_with_config,
 };
 use alien_ir::{GlobalConfig, Mode, Reset};
 use napi::bindgen_prelude::{Error, Result};
@@ -121,6 +121,41 @@ impl Compiler {
             .collect();
         let output = transform_project(&inputs, &self.config)
             .map_err(|error| Error::from_reason(error.to_string()))?;
+        let modules = output
+            .modules
+            .into_iter()
+            .map(|module| {
+                convert(Some(module))?
+                    .ok_or_else(|| Error::from_reason("missing compiled project module"))
+            })
+            .collect::<Result<_>>()?;
+        Ok(ProjectResult {
+            modules,
+            css: output.css,
+        })
+    }
+
+    /// Experimental compact atomic project output, not yet suitable for production.
+    #[napi]
+    pub fn transform_atomic_project(
+        &self,
+        sources: Vec<ProjectInput>,
+        strong_isolation: Option<bool>,
+    ) -> Result<ProjectResult> {
+        let inputs: Vec<_> = sources
+            .iter()
+            .map(|input| ProjectSource {
+                source: &input.source,
+                path: Path::new(&input.path),
+                module_id: &input.module_id,
+            })
+            .collect();
+        let output = transform_atomic_project_with_isolation(
+            &inputs,
+            &self.config,
+            strong_isolation.unwrap_or(false),
+        )
+        .map_err(|error| Error::from_reason(error.to_string()))?;
         let modules = output
             .modules
             .into_iter()

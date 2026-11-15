@@ -152,7 +152,14 @@ pub(crate) fn resolve_styles<'a, R: AsRef<[Rule]>>(
         });
         resolved.push(ResolvedStyle {
             name,
-            class: format!("{prefix}{}", offset + index),
+            class: if prefix == "a" {
+                format!("{prefix}{}", offset + index)
+            } else {
+                format!(
+                    "{prefix}{}",
+                    crate::class_name::compact_index(offset + index)
+                )
+            },
             rules,
         });
     }
@@ -162,34 +169,49 @@ pub(crate) fn resolve_styles<'a, R: AsRef<[Rule]>>(
 pub(crate) fn compile_grouped(styles: &[ResolvedStyle<'_>]) -> CompiledStyles {
     let mut css = String::new();
     let mut classes = BTreeMap::new();
-    let mut previous: Option<&ResolvedStyle<'_>> = None;
-    for style in styles {
-        if let Some(previous) = previous
-            && previous.rules.len() == style.rules.len()
-            && previous
-                .rules
-                .iter()
-                .zip(&style.rules)
-                .all(|(left, right)| {
-                    left.condition == right.condition && left.signature == right.signature
-                })
-        {
-            classes.insert(style.name.to_owned(), previous.class.clone());
-            continue;
-        }
-        for group in style
-            .rules
-            .chunk_by(|left, right| left.condition == right.condition)
-        {
+    // Reuse a whole style when nothing between its occurrences can change the
+    // cascade for any of its properties. Record logical occurrences even when
+    // no CSS is emitted, so later checks still see every intervening style.
+    let mut previous: BTreeMap<String, (usize, &str)> = BTreeMap::new();
+    let mut last_property: BTreeMap<alien_ir::Property, usize> = BTreeMap::new();
+    for (index, style) in styles.iter().enumerate() {
+        let mut key = String::new();
+        for group in style.rules.chunk_by(|a, b| a.condition == b.condition) {
             write_rules(
-                &mut css,
-                &style.class,
+                &mut key,
+                "x",
                 group[0].condition,
                 group.iter().map(|rule| &rule.declaration),
             );
         }
-        classes.insert(style.name.to_owned(), style.class.clone());
-        previous = Some(style);
+        let reusable = previous.get(&key).copied().filter(|(last, _)| {
+            style.rules.iter().all(|rule| {
+                last_property.iter().all(|(property, seen)| {
+                    *seen <= *last || !rule.declaration.property.conflicts_with(*property)
+                })
+            })
+        });
+        let class = if let Some((_, class)) = reusable {
+            class
+        } else {
+            for group in style
+                .rules
+                .chunk_by(|left, right| left.condition == right.condition)
+            {
+                write_rules(
+                    &mut css,
+                    &style.class,
+                    group[0].condition,
+                    group.iter().map(|rule| &rule.declaration),
+                );
+            }
+            &style.class
+        };
+        classes.insert(style.name.to_owned(), class.to_owned());
+        previous.insert(key, (index, class));
+        for rule in &style.rules {
+            last_property.insert(rule.declaration.property, index);
+        }
     }
     CompiledStyles { css, classes }
 }

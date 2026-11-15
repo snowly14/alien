@@ -1,10 +1,10 @@
 # CSS size comparison
 
-Run `bun run bench:css` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Use `bun run bench:css --check` to require outright Alien wins on all three metrics; `--check=brotli --min-savings=20` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
+Run `bun run bench:css` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Add `--check` to require outright Alien wins on all three metrics; `--check=brotli --min-savings=20` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
 
 Matching style declarations compiled with Alien, Tailwind 4.3.5, and StyleX 0.19.2. Lower is better; all sizes are in bytes. Bold values mark the smallest output in each scenario.
 
-Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS 1.33.0, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.
+Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS 1.33.0, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. Alien uses its default compact atomic project generation: style values are descriptors composed with cx(), compiler-generated logical and physical properties use ordered class variants, conditions use fixed precedence, and short project prefixes can collide. Its JavaScript and runtime overhead are not measured. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with default atomic complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.
 
 ## Winners at a glance
 
@@ -14,16 +14,16 @@ Smallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS
 | --- | --- | --- | --- |
 | One button | Alien | Alien | Alien |
 | Button with focus and breakpoint | Alien | Alien | Alien |
-| 100 alternating color variants | StyleX | StyleX | StyleX |
-| 100 cards and buttons, one module | Tailwind | Alien | Alien |
-| 100 cards and buttons, 20 modules | Tailwind | Alien | Alien |
-| 100 distinct width/height pairs | StyleX | Alien | Alien |
+| 100 alternating color variants | Alien | Alien | Alien |
+| 100 cards and buttons, one module | Alien | Alien | Alien |
+| 100 cards and buttons, 20 modules | Alien | Alien | Alien |
+| 100 distinct width/height pairs | Alien | Alien | Alien |
 
 | Tool | Minified wins | gzip wins | Brotli wins |
 | --- | ---: | ---: | ---: |
-| Alien | 2/6 | 5/6 | 5/6 |
-| Tailwind | 2/6 | 0/6 | 0/6 |
-| StyleX | 2/6 | 1/6 | 1/6 |
+| Alien | 6/6 | 6/6 | 6/6 |
+| Tailwind | 0/6 | 0/6 | 0/6 |
+| StyleX | 0/6 | 0/6 | 0/6 |
 
 
 ## One button
@@ -32,12 +32,12 @@ Smallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | **206** | **179** | **114** |
+| Alien | **248** | **174** | **124** |
 | Tailwind | 912 | 494 | 415 |
 | StyleX | 351 | 227 | 171 |
 
-- Alien vs Tailwind — minified: 77.4% smaller, gzip: 63.8% smaller, brotli: 72.5% smaller
-- Alien vs StyleX — minified: 41.3% smaller, gzip: 21.1% smaller, brotli: 33.3% smaller
+- Alien vs Tailwind — minified: 72.8% smaller, gzip: 64.8% smaller, brotli: 70.1% smaller
+- Alien vs StyleX — minified: 29.3% smaller, gzip: 23.3% smaller, brotli: 27.5% smaller
 
 ## Button with focus and breakpoint
 
@@ -45,67 +45,67 @@ Smallest CSS by scenario and metric. Ties credit every tied tool. This ranks CSS
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | **346** | **230** | **154** |
+| Alien | **359** | **219** | **171** |
 | Tailwind | 1,094 | 547 | 459 |
 | StyleX | 495 | 288 | 222 |
 
-- Alien vs Tailwind — minified: 68.4% smaller, gzip: 58.0% smaller, brotli: 66.4% smaller
-- Alien vs StyleX — minified: 30.1% smaller, gzip: 20.1% smaller, brotli: 30.6% smaller
+- Alien vs Tailwind — minified: 67.2% smaller, gzip: 60.0% smaller, brotli: 62.7% smaller
+- Alien vs StyleX — minified: 27.5% smaller, gzip: 24.0% smaller, brotli: 23.0% smaller
 
 ## 100 alternating color variants
 
-**Winners — minified: StyleX · gzip: StyleX · brotli: StyleX**
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | 3,940 | 315 | 219 |
+| Alien | **35** | **47** | **39** |
 | Tailwind | 147 | 137 | 119 |
-| StyleX | **40** | **55** | **44** |
+| StyleX | 40 | 55 | 44 |
 
-- Alien vs Tailwind — minified: 2580.3% larger, gzip: 129.9% larger, brotli: 84.0% larger
-- Alien vs StyleX — minified: 9750.0% larger, gzip: 472.7% larger, brotli: 397.7% larger
+- Alien vs Tailwind — minified: 76.2% smaller, gzip: 65.7% smaller, brotli: 67.2% smaller
+- Alien vs StyleX — minified: 12.5% smaller, gzip: 14.5% smaller, brotli: 11.4% smaller
 
 ## 100 cards and buttons, one module
 
-**Winners — minified: Tailwind · gzip: Alien · brotli: Alien**
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | 8,040 | **742** | **426** |
-| Tailwind | **3,505** | 1,000 | 672 |
+| Alien | **2,886** | **696** | **390** |
+| Tailwind | 3,505 | 1,000 | 672 |
 | StyleX | 5,375 | 1,110 | 846 |
 
-- Alien vs Tailwind — minified: 129.4% larger, gzip: 25.8% smaller, brotli: 36.6% smaller
-- Alien vs StyleX — minified: 49.6% larger, gzip: 33.2% smaller, brotli: 49.6% smaller
+- Alien vs Tailwind — minified: 17.7% smaller, gzip: 30.4% smaller, brotli: 42.0% smaller
+- Alien vs StyleX — minified: 46.3% smaller, gzip: 37.3% smaller, brotli: 53.9% smaller
 
 ## 100 cards and buttons, 20 modules
 
-**Winners — minified: Tailwind · gzip: Alien · brotli: Alien**
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | 8,044 | **743** | **424** |
-| Tailwind | **3,505** | 1,000 | 672 |
+| Alien | **2,886** | **695** | **394** |
+| Tailwind | 3,505 | 1,000 | 672 |
 | StyleX | 5,375 | 1,110 | 846 |
 
-- Alien vs Tailwind — minified: 129.5% larger, gzip: 25.7% smaller, brotli: 36.9% smaller
-- Alien vs StyleX — minified: 49.7% larger, gzip: 33.1% smaller, brotli: 49.9% smaller
+- Alien vs Tailwind — minified: 17.7% smaller, gzip: 30.5% smaller, brotli: 41.4% smaller
+- Alien vs StyleX — minified: 46.3% smaller, gzip: 37.4% smaller, brotli: 53.4% smaller
 
 ## 100 distinct width/height pairs
 
-**Winners — minified: StyleX · gzip: Alien · brotli: Alien**
+**Winners — minified: Alien · gzip: Alien · brotli: Alien**
 
 | Tool | Minified CSS | gzip | Brotli |
 | --- | ---: | ---: | ---: |
-| Alien | 5,390 | **750** | **376** |
+| Alien | **4,048** | **779** | **412** |
 | Tailwind | 5,197 | 937 | 513 |
-| StyleX | **4,383** | 1,572 | 1,201 |
+| StyleX | 4,383 | 1,572 | 1,201 |
 
-- Alien vs Tailwind — minified: 3.7% larger, gzip: 20.0% smaller, brotli: 26.7% smaller
-- Alien vs StyleX — minified: 23.0% larger, gzip: 52.3% smaller, brotli: 68.7% smaller
+- Alien vs Tailwind — minified: 22.1% smaller, gzip: 16.9% smaller, brotli: 19.7% smaller
+- Alien vs StyleX — minified: 7.6% smaller, gzip: 50.4% smaller, brotli: 65.7% smaller
 
 ## Reading the results
 
-Percentages use (competitor bytes − Alien bytes) / competitor bytes; “larger” means Alien loses. Compare Brotli or gzip for CSS transfer size, and minified CSS for the uncompressed stylesheet. A smaller stylesheet does not necessarily mean a smaller application: extra class names also consume HTML and JavaScript bytes. Alien selects sharing plans using CSS plus its generated class map, rather than CSS alone.
+Percentages use (competitor bytes − Alien bytes) / competitor bytes; “larger” means Alien loses. Compare Brotli or gzip for CSS transfer size, and minified CSS for the uncompressed stylesheet. A smaller stylesheet does not necessarily mean a smaller application: extra class names also consume HTML and JavaScript bytes. The atomic mode emits metadata and requires the cx runtime; neither is included in these CSS sizes.
 
-Alien preserves declaration order. Independent transforms retain module-specific class names; complete-project generation uses a shared namespace and optimizes safe declarations across modules. It shares safe repeated declarations individually or in groups when that reduces its cost model. Tailwind and StyleX reuse utilities across modules; the split-module fixture deliberately measures that difference. No tool is guaranteed to win for every workload.
+The default atomic mode shares declarations across the complete project and requires cx() to compose descriptor values. Its short namespaces have a collision risk; manually constructed overlapping descriptors without ordering metadata are rejected. Tailwind and StyleX reuse utilities across modules; the split-module fixture deliberately measures that difference. No tool is guaranteed to win for every workload.

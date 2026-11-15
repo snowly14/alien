@@ -24,7 +24,7 @@ test("prepare supports the same custom globals path as the Vite plugin", async (
   try {
     await writeFile(
       join(root, "design.tokens.ts"),
-      'import {alien} from "alien";export default alien.globals({mode:"strict",radius:{control:"6px"}});',
+      'import {alien} from "@alien-css/core";export default alien.globals({mode:"strict",radius:{control:"6px"}});',
     );
     for (const args of [
       ["prepare", root, "--globals", "design.tokens.ts"],

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { loadCompiler, moduleIdentity, projectNamespace, resetCss } from "alien-compiler";
+import { loadCompiler, moduleIdentity, projectNamespace, resetCss } from "@alien-css/compiler";
 import MagicString from "magic-string";
 import type { LoaderContext } from "webpack";
 import type { AlienWebpackOptions } from "./index.ts";

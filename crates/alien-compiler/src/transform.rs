@@ -200,6 +200,168 @@ pub struct TransformedProject {
     pub css: String,
 }
 
+/// Experimental complete-project atomic compilation.
+///
+/// The generated classes are unique only within this stylesheet. The returned
+/// style values are atomic descriptors rather than strings. Consumers must
+/// resolve composition with ordered atomic descriptors and must take care when
+/// combining independently generated short-name stylesheets.
+///
+/// # Errors
+/// Returns diagnostics for invalid styles, duplicate identities or missing calls.
+pub fn transform_atomic_project(
+    sources: &[ProjectSource<'_>],
+    config: &GlobalConfig,
+) -> Result<TransformedProject, CompileError> {
+    transform_atomic_project_with_isolation(sources, config, false)
+}
+
+/// Compile an experimental atomic project with an optional 128-bit namespace.
+///
+/// # Errors
+/// Returns diagnostics for invalid styles, duplicate identities or missing calls.
+pub fn transform_atomic_project_with_isolation(
+    sources: &[ProjectSource<'_>],
+    config: &GlobalConfig,
+    strong_isolation: bool,
+) -> Result<TransformedProject, CompileError> {
+    let mut identities = BTreeSet::new();
+    let mut identity = String::from("alien-atomic-project:");
+    let mut prepared = Vec::with_capacity(sources.len());
+    for (index, input) in sources.iter().enumerate() {
+        if !identities.insert(input.module_id) {
+            return Err(CompileError::Configuration(format!(
+                "duplicate module identity: {}",
+                input.module_id
+            )));
+        }
+        let _ = write!(identity, "{}:{}", input.module_id.len(), input.module_id);
+        let module = prepare(input.source, input.path, config, &format!("{index}:"))?;
+        if module.calls.is_empty() {
+            return Err(CompileError::Configuration(format!(
+                "{}: a project style module must contain an alien.create() declaration",
+                input.path.display()
+            )));
+        }
+        prepared.push(module);
+    }
+    let entries: Vec<_> = prepared.iter().map(borrowed_entries).collect();
+    let mut resolved = Vec::new();
+    for entry in &entries {
+        resolved.extend(resolve_styles(entry, "a", 0, config)?);
+    }
+    // A four-character CSS identifier preserves about 23.7 bits of identity.
+    // This reduces,
+    // but cannot eliminate, cross-project collisions; callers must not combine
+    // independently generated sheets without checking their namespaces.
+    let prefix = if strong_isolation {
+        class_prefix(&identity)
+    } else {
+        crate::class_name::compact_project_prefix(&identity)
+    };
+    let output = crate::atomic::compile_resolved(&resolved, &prefix);
+    let modules = sources
+        .iter()
+        .zip(&prepared)
+        .map(|(input, module)| rewrite_atomic(input.source, module, &output.styles, &prefix))
+        .collect();
+    Ok(TransformedProject {
+        modules,
+        css: output.css,
+    })
+}
+
+fn rewrite_atomic(
+    source: &str,
+    prepared: &PreparedModule,
+    styles: &BTreeMap<String, Vec<crate::atomic::AtomicClass>>,
+    prefix: &str,
+) -> TransformedModule {
+    let mut code = String::with_capacity(source.len());
+    let mut cursor = 0;
+    let mut utf16_cursor = 0;
+    let mut edits = Vec::with_capacity(prepared.calls.len());
+    for Call { span, keys } in &prepared.calls {
+        let unchanged = &source[cursor..span.start];
+        let start = utf16_cursor + unchanged.encode_utf16().count();
+        let end = start + source[span.clone()].encode_utf16().count();
+        let mut replacement = String::from("({");
+        for (index, (name, key)) in keys.iter().enumerate() {
+            if index != 0 {
+                replacement.push(',');
+            }
+            let name = serde_json::to_string(name).expect("string serialization cannot fail");
+            if name == "\"__proto__\"" {
+                let _ = write!(replacement, "[{name}]");
+            } else {
+                replacement.push_str(&name);
+            }
+            replacement.push(':');
+            replacement.push_str(&atomic_style_value(&styles[key], prefix));
+        }
+        replacement.push_str("})");
+        code.push_str(unchanged);
+        code.push_str(&replacement);
+        edits.push(SourceEdit {
+            start,
+            end,
+            replacement,
+        });
+        utf16_cursor = end;
+        cursor = span.end;
+    }
+    code.push_str(&source[cursor..]);
+    TransformedModule {
+        code,
+        css: String::new(),
+        edits,
+    }
+}
+
+fn atomic_style_value(atoms: &[crate::atomic::AtomicClass], prefix: &str) -> String {
+    let tokens: Vec<_> = atoms
+        .iter()
+        .map(|atom| {
+            let mut token = format!("{}~{}", atom.class_name, atom.property);
+            if !atom.condition.is_empty() || atom.important || atom.order_group.is_some() {
+                let _ = write!(token, "~{}", atom.condition);
+                if atom.important || atom.order_group.is_some() {
+                    token.push_str(if atom.important { "~1" } else { "~0" });
+                    if let (Some(group), Some(start)) = (atom.order_group, atom.variant_start) {
+                        let group = match group {
+                            "padding" => "p",
+                            "margin" => "m",
+                            _ => unreachable!("unknown atomic ordering group"),
+                        };
+                        let _ = write!(token, "~{group}~{start}~{}", atom.variant_count);
+                    }
+                }
+            }
+            token
+        })
+        .collect();
+    let ordinary = serde_json::to_string(&tokens).expect("string serialization cannot fail");
+    if tokens.len() < 2
+        || tokens
+            .iter()
+            .any(|token| !token.starts_with(prefix) || token.chars().any(char::is_whitespace))
+    {
+        return ordinary;
+    }
+    let suffixes = tokens
+        .iter()
+        .map(|token| &token[prefix.len()..])
+        .collect::<Vec<_>>()
+        .join(" ");
+    let packed = serde_json::to_string(&[format!("@{prefix} {suffixes}")])
+        .expect("string serialization cannot fail");
+    if packed.len() < ordinary.len() {
+        packed
+    } else {
+        ordinary
+    }
+}
+
 /// Optimizes a complete, ordered set of style modules, retaining cascade order.
 /// All returned modules must be deployed together with the returned stylesheet.
 ///
@@ -244,6 +406,13 @@ pub fn transform_project(
         baseline.css.push_str(&output.css);
         baseline.classes.extend(output.classes);
         resolved.extend(styles);
+    }
+    // Adjacent identical styles can also straddle module or create-call boundaries.
+    // Compare the complete grouped output with the independently optimized modules
+    // so sharing those styles never increases the CSS plus class-map cost.
+    let grouped = compile_grouped(&resolved);
+    if crate::optimize::size(&grouped) < crate::optimize::size(&baseline) {
+        baseline = grouped;
     }
     // Reserve a separate sharing offset so local and project candidates cannot collide.
     let output = crate::optimize::optimize(&resolved, &prefix, offset, baseline);

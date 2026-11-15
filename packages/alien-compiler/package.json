@@ -1,6 +1,6 @@
 {
-  "name": "alien-compiler",
-  "version": "0.0.1",
+  "name": "@alien-css/compiler",
+  "version": "0.1.0",
   "type": "module",
   "license": "MIT",
   "exports": {
@@ -22,5 +22,24 @@
   },
   "dependencies": {
     "detect-libc": "2.1.2"
+  },
+  "description": "Native compiler and portable project generator for Alien CSS.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snowly14/alien.git",
+    "directory": "packages/alien-compiler"
+  },
+  "homepage": "https://github.com/snowly14/alien#readme",
+  "bugs": {
+    "url": "https://github.com/snowly14/alien/issues"
+  },
+  "keywords": [
+    "css",
+    "typescript",
+    "styling",
+    "alien-css"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

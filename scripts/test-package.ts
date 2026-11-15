@@ -27,12 +27,12 @@ try {
       name: "alien-installed-package-test",
       private: true,
       type: "module",
-      overrides: { "alien-compiler": `file:${join(temporary, "alien-compiler.tgz")}` },
+      overrides: { "@alien-css/compiler": `file:${join(temporary, "alien-compiler.tgz")}` },
       dependencies: {
-        alien: `file:${join(temporary, "alien.tgz")}`,
-        "alien-compiler": `file:${join(temporary, "alien-compiler.tgz")}`,
-        "alien-vite": `file:${join(temporary, "alien-vite.tgz")}`,
-        "alien-webpack": `file:${join(temporary, "alien-webpack.tgz")}`,
+        "@alien-css/core": `file:${join(temporary, "alien.tgz")}`,
+        "@alien-css/compiler": `file:${join(temporary, "alien-compiler.tgz")}`,
+        "@alien-css/vite": `file:${join(temporary, "alien-vite.tgz")}`,
+        "@alien-css/webpack": `file:${join(temporary, "alien-webpack.tgz")}`,
         vite: "8.3.8",
         typescript: "5.9.3",
       },
@@ -40,20 +40,20 @@ try {
   );
   await writeFile(
     join(temporary, "alien.globals.ts"),
-    'import {alien} from "alien";export default alien.globals({mode:"strict",color:{brand:"#123456"}});',
+    'import {alien} from "@alien-css/core";export default alien.globals({mode:"strict",color:{brand:"#123456"}});',
   );
   await writeFile(
     join(temporary, "vite.config.ts"),
-    'import alien from "alien-vite";export default {plugins:[alien()]};',
+    'import alien from "@alien-css/vite";export default {plugins:[alien()]};',
   );
   await writeFile(join(temporary, "index.html"), '<script type="module" src="/main.ts"></script>');
   await writeFile(
     join(temporary, "main.ts"),
-    'import {alien,tokens} from "alien";const styles=alien.create({root:{color:tokens.color.brand}});document.body.className=styles.root;',
+    'import {alien,tokens} from "@alien-css/core";const styles=alien.create({root:{color:tokens.color.brand}});document.body.className=styles.root;',
   );
   await writeFile(
     join(temporary, "type-check.ts"),
-    `import {tokens, type Style} from "alien";
+    `import {tokens, type Style} from "@alien-css/core";
 // @ts-expect-error strict mode also survives packaged declaration emission
 const literal: Style = {color:"red"};
 // @ts-expect-error undeclared project tokens are rejected
@@ -78,7 +78,7 @@ const missing = tokens.color.missing;
   await run(["install"], temporary);
   const smoke = (await readFile(join(root, "scripts/smoke-native.mjs"), "utf8")).replace(
     "../packages/alien-compiler/dist/index.js",
-    "alien-compiler",
+    "@alien-css/compiler",
   );
   await writeFile(join(temporary, "native-smoke.mjs"), smoke);
   await run(["run", "native-smoke.mjs"], temporary);

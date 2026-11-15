@@ -22,6 +22,8 @@
         "@tailwindcss/node": "4.3.5",
         "@types/babel__core": "7.20.5",
         "@types/bun": "latest",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.3.0",
         "@vitejs/plugin-vue": "^6.0.11",
         "astro": "^7.4.11",
@@ -45,25 +47,25 @@
     "examples/react": {
       "name": "alien-react-demo",
       "dependencies": {
-        "alien": "workspace:*",
+        "@alien-css/core": "workspace:*",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
       },
       "devDependencies": {
+        "@alien-css/vite": "workspace:*",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.3.0",
-        "alien-vite": "workspace:*",
         "vite": "^8.3.8",
       },
     },
     "packages/alien": {
-      "name": "alien",
-      "version": "0.0.1",
+      "name": "@alien-css/core",
+      "version": "0.1.0",
     },
     "packages/alien-compiler": {
-      "name": "alien-compiler",
-      "version": "0.0.1",
+      "name": "@alien-css/compiler",
+      "version": "0.1.0",
       "bin": {
         "alien": "./dist/cli.js",
       },
@@ -72,13 +74,13 @@
       },
     },
     "packages/alien-vite": {
-      "name": "alien-vite",
-      "version": "0.0.1",
+      "name": "@alien-css/vite",
+      "version": "0.1.0",
       "bin": {
         "alien": "./dist/cli.js",
       },
       "dependencies": {
-        "alien-compiler": "workspace:*",
+        "@alien-css/compiler": "workspace:*",
         "magic-string": "^0.30.21",
       },
       "peerDependencies": {
@@ -94,10 +96,10 @@
       ],
     },
     "packages/alien-webpack": {
-      "name": "alien-webpack",
-      "version": "0.0.1",
+      "name": "@alien-css/webpack",
+      "version": "0.1.0",
       "dependencies": {
-        "alien-compiler": "workspace:*",
+        "@alien-css/compiler": "workspace:*",
         "magic-string": "^0.30.21",
       },
       "peerDependencies": {
@@ -106,6 +108,14 @@
     },
   },
   "packages": {
+    "@alien-css/compiler": ["@alien-css/compiler@workspace:packages/alien-compiler"],
+
+    "@alien-css/core": ["@alien-css/core@workspace:packages/alien"],
+
+    "@alien-css/vite": ["@alien-css/vite@workspace:packages/alien-vite"],
+
+    "@alien-css/webpack": ["@alien-css/webpack@workspace:packages/alien-webpack"],
+
     "@ampproject/remapping": ["@ampproject/remapping@2.3.0", "", { "dependencies": { "@jridgewell/gen-mapping": "^0.3.5", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw=="],
 
     "@angular-devkit/architect": ["@angular-devkit/architect@0.2202.7", "", { "dependencies": { "@angular-devkit/core": "22.2.7", "rxjs": "7.8.2" }, "bin": { "architect": "bin/cli.js" } }, "sha512-l8apKEojW8WB5pqhK+BkO7+DZSCLNpvP+JBdBzDYagrtkKbtr1AKPuAE/2sVvlBE8SXyNCp3CX9gTtkk2q40mw=="],
@@ -928,15 +938,7 @@
 
     "ajv-keywords": ["ajv-keywords@5.1.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3" }, "peerDependencies": { "ajv": "^8.8.2" } }, "sha512-YCS/JNFAUyr5vAuhk1DWm1CBxRHW9LbJ2ozWeemrIqpbsqKjHVxYPyi5GC0rjZIT5JxJ3virVTS8wk4i/Z+krw=="],
 
-    "alien": ["alien@workspace:packages/alien"],
-
-    "alien-compiler": ["alien-compiler@workspace:packages/alien-compiler"],
-
     "alien-react-demo": ["alien-react-demo@workspace:examples/react"],
-
-    "alien-vite": ["alien-vite@workspace:packages/alien-vite"],
-
-    "alien-webpack": ["alien-webpack@workspace:packages/alien-webpack"],
 
     "am-i-vibing": ["am-i-vibing@0.5.0", "", { "dependencies": { "process-ancestry": "^0.1.0" }, "bin": { "am-i-vibing": "dist/cli.mjs" } }, "sha512-KLcsDhqf1XRrJmJr+9I/C0EX2K+sGrAGZFgkmd84c8TJO9zJBu+/kFInjazu1KfJWFhWDKdRWkpBzEs7s35DVA=="],
 

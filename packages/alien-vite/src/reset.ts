@@ -1,1 +1,1 @@
-export { resetCss } from "alien-compiler";
+export { resetCss } from "@alien-css/compiler";

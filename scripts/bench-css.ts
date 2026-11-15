@@ -16,7 +16,17 @@ import {
   savingsPercent,
 } from "./benchmark-metrics.ts";
 
-const options = parseBenchmarkOptions(process.argv.slice(2));
+const args = process.argv.slice(2);
+const standard = args.includes("--standard");
+const atomicAlias = args.includes("--experimental-atomic");
+if (standard && atomicAlias) throw new Error("--standard and --experimental-atomic conflict");
+for (const flag of ["--standard", "--experimental-atomic"])
+  if (args.filter((arg) => arg === flag).length > 1)
+    throw new Error(`${flag} may only be supplied once`);
+const atomic = !standard;
+const options = parseBenchmarkOptions(
+  args.filter((arg) => arg !== "--experimental-atomic" && arg !== "--standard"),
+);
 
 type Declaration = [property: string, value: string, candidate: string, condition?: "focus" | "md"];
 const button: Declaration[] = [
@@ -74,7 +84,10 @@ const scenarios: { name: string; styles: Declaration[][]; stylesPerModule?: numb
   },
 ];
 
-const outputDirectory = new URL("../docs/benchmarks/", import.meta.url);
+const outputDirectory = new URL(
+  atomic ? "../docs/benchmarks/" : "../docs/benchmarks-standard/",
+  import.meta.url,
+);
 await mkdir(outputDirectory, { recursive: true });
 const compiler = loadCompiler();
 const require = createRequire(import.meta.url);
@@ -140,7 +153,7 @@ for (const { name, styles, stylesPerModule = styles.length } of scenarios) {
     );
     const filename = `benchmark-${start}`;
     const projectInput = {
-      source: `import {alien} from "alien"; export const styles = alien.create(${JSON.stringify(alienStyles)});`,
+      source: `import {alien} from "@alien-css/core"; export const styles = alien.create(${JSON.stringify(alienStyles)});`,
       path: `${filename}.ts`,
       moduleId: `./${filename}.ts`,
     };
@@ -173,7 +186,13 @@ for (const { name, styles, stylesPerModule = styles.length } of scenarios) {
       throw new Error(`Tailwind did not emit ${candidate}`);
   }
   for (const [tool, css] of [
-    ["Alien", compiler.transformProject(projectInputs).css],
+    [
+      "Alien",
+      (atomic
+        ? compiler.transformAtomicProject(projectInputs)
+        : compiler.transformProject(projectInputs)
+      ).css,
+    ],
     ["Tailwind", tailwindCss],
     ["StyleX", stylex.processStylexRules(stylexRules)],
   ] as const) {
@@ -221,10 +240,10 @@ const summaryHtml = `<section><h2>Winners at a glance</h2><p>Smallest CSS by sce
 
 const introduction = `Matching style declarations compiled with Alien, Tailwind ${versions.tailwind}, and StyleX ${versions.stylex}. Lower is better; all sizes are in bytes. Bold values mark the smallest output in each scenario.
 
-Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS ${require("lightningcss/package.json").version}, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules. These fixtures do not establish a universal winner or framework compatibility. Alien is measured with complete-project compilation (alien generate) consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.`;
+Tailwind uses its standard theme without Preflight. All outputs use Lightning CSS ${require("lightningcss/package.json").version}, gzip level 9, and Brotli quality 11. Each scenario produces one stylesheet, including the 20-module scenario. JavaScript, HTML class names, resets, build time, and runtime performance are excluded. ${atomic ? "Alien uses its default compact atomic project generation: style values are descriptors composed with cx(), compiler-generated logical and physical properties use ordered class variants, conditions use fixed precedence, and short project prefixes can collide. Its JavaScript and runtime overhead are not measured." : "The alternating-color fixture tests conflicting values; Alien preserves source-order composition, while utility systems have their own composition rules."} These fixtures do not establish a universal winner or framework compatibility. Alien is measured with ${atomic ? "default atomic" : "standard"} complete-project compilation ${atomic ? "(alien generate)" : "(alien generate --standard)"} consistently in all six scenarios. There is one Alien result per scenario, never a best-of selection between compilation modes. These results do not measure the incremental Vite/webpack path. Percentage savings are (competitor bytes − Alien bytes) / competitor bytes × 100; negative savings mean Alien is larger.`;
 let markdown = `# CSS size comparison
 
-Run \`bun run bench:css\` to regenerate this report, the [HTML report](benchmarks/index.html), [JSON results](benchmarks/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Use \`bun run bench:css --check\` to require outright Alien wins on all three metrics; \`--check=brotli --min-savings=20\` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
+Run \`bun run bench:css${atomic ? "" : " --standard"}\` to regenerate this report, the [HTML report](${atomic ? "benchmarks" : "benchmarks-standard"}/index.html), [JSON results](${atomic ? "benchmarks" : "benchmarks-standard"}/results.json), and the measured CSS files. The terminal prints winners, percentage differences and scenario totals. Add \`--check\` to require outright Alien wins on all three metrics; \`--check=brotli --min-savings=20\` requires at least 20% savings against every competitor in every scenario. A failed check exits with status 1 after writing the reports.
 
 ${introduction}
 
@@ -281,14 +300,17 @@ for (const { name } of scenarios) {
 markdown += `
 ## Reading the results
 
-Percentages use (competitor bytes − Alien bytes) / competitor bytes; “larger” means Alien loses. Compare Brotli or gzip for CSS transfer size, and minified CSS for the uncompressed stylesheet. A smaller stylesheet does not necessarily mean a smaller application: extra class names also consume HTML and JavaScript bytes. Alien selects sharing plans using CSS plus its generated class map, rather than CSS alone.
+Percentages use (competitor bytes − Alien bytes) / competitor bytes; “larger” means Alien loses. Compare Brotli or gzip for CSS transfer size, and minified CSS for the uncompressed stylesheet. A smaller stylesheet does not necessarily mean a smaller application: extra class names also consume HTML and JavaScript bytes. ${atomic ? "The atomic mode emits metadata and requires the cx runtime; neither is included in these CSS sizes." : "Alien selects sharing plans using CSS plus its generated class map, rather than CSS alone."}
 
-Alien preserves declaration order. Independent transforms retain module-specific class names; complete-project generation uses a shared namespace and optimizes safe declarations across modules. It shares safe repeated declarations individually or in groups when that reduces its cost model. Tailwind and StyleX reuse utilities across modules; the split-module fixture deliberately measures that difference. No tool is guaranteed to win for every workload.
+${atomic ? "The default atomic mode shares declarations across the complete project and requires cx() to compose descriptor values. Its short namespaces have a collision risk; manually constructed overlapping descriptors without ordering metadata are rejected." : "Alien preserves declaration order. Independent transforms retain module-specific class names; complete-project generation uses a shared namespace and optimizes safe declarations across modules. It shares safe repeated declarations individually or in groups when that reduces its cost model."} Tailwind and StyleX reuse utilities across modules; the split-module fixture deliberately measures that difference. No tool is guaranteed to win for every workload.
 `;
-await writeFile(new URL("../css-benchmark.md", outputDirectory), markdown);
+await writeFile(
+  new URL(atomic ? "../css-benchmark.md" : "../css-benchmark-standard.md", outputDirectory),
+  markdown,
+);
 await writeFile(
   new URL("results.json", outputDirectory),
-  `${JSON.stringify({ versions: { ...versions, lightningcss: require("lightningcss/package.json").version }, compression: { gzip: 9, brotli: 11 }, alienCompilation: "whole-project", percentageResults, winners, scoreboard, rows }, null, 2)}\n`,
+  `${JSON.stringify({ versions: { ...versions, lightningcss: require("lightningcss/package.json").version }, compression: { gzip: 9, brotli: 11 }, alienCompilation: atomic ? "whole-project-atomic" : "whole-project-standard", percentageResults, winners, scoreboard, rows }, null, 2)}\n`,
 );
 await writeFile(
   new URL("index.html", outputDirectory),
@@ -296,9 +318,13 @@ await writeFile(
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Alien · CSS size comparison</title>
 <style>
 :root{font-family:system-ui,sans-serif;color:#18243a;background:#f3f6fa;color-scheme:light}body{max-width:960px;margin:0 auto;padding:48px 20px}h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.04em;margin:12px 0}p{line-height:1.7;max-width:85ch;color:#475569}.eyebrow{font-weight:700;color:#35644d;letter-spacing:.12em;text-transform:uppercase;font-size:.8rem}section{background:white;border:1px solid #dce3ed;border-radius:16px;padding:24px;margin:24px 0}h2{font-size:1.2rem;margin:0 0 20px}.table{overflow:auto}table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;white-space:nowrap}th,td{padding:16px 12px;text-align:right;border-bottom:1px solid #e7ecf3}th:first-child{text-align:left}thead{font-size:.8rem;color:#58657a}td.best{font-weight:750;color:#14613e;background:#edf8f0}td span{display:block;font-size:.65rem;font-weight:500;margin-top:4px}a{color:#2459a6}code{background:#e8edf5;padding:3px 6px;border-radius:4px}footer{font-size:.9rem;color:#475569;line-height:1.7}
-</style><header><div class="eyebrow">Reproducible benchmark</div><h1>How much CSS gets shipped?</h1><p>${introduction.replaceAll("\n\n", "</p><p>")}</p><p><code>bun run bench:css</code> · <a href="results.json">Download JSON</a> · Click a tool name to inspect its CSS.</p></header>${sections}<footer>Compare gzip or Brotli for transfer size. Alien evaluates CSS plus generated class-map size; this report measures CSS only. Module boundaries, composition, code splitting, and real application content can change the ranking. Framework compatibility and universal superiority are not established by these measurements.</footer></html>`,
+</style><header><div class="eyebrow">Reproducible benchmark</div><h1>How much CSS gets shipped?</h1><p>${introduction.replaceAll("\n\n", "</p><p>")}</p><p><code>bun run bench:css${atomic ? "" : " --standard"}</code> · <a href="results.json">Download JSON</a> · Click a tool name to inspect its CSS.</p></header>${sections}<footer>Compare gzip or Brotli for transfer size. ${atomic ? "Atomic mode emits additional metadata and requires cx; this report measures CSS only." : "Alien evaluates CSS plus generated class-map size; this report measures CSS only."} Module boundaries, composition, code splitting, and real application content can change the ranking. Framework compatibility and universal superiority are not established by these measurements.</footer></html>`,
 );
-console.log("\nReports: docs/css-benchmark.md and docs/benchmarks/index.html");
+console.log(
+  atomic
+    ? "\nReports: docs/css-benchmark.md and docs/benchmarks/index.html"
+    : "\nReports: docs/css-benchmark-standard.md and docs/benchmarks-standard/index.html",
+);
 
 console.log("\nSCENARIO WINS — smallest CSS; ties credit all tied tools");
 console.table(

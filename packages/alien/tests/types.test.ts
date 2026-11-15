@@ -17,8 +17,8 @@ function diagnostics(source: string, registry = "") {
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     types: [],
     paths: {
-      alien: [resolve(root, "packages/alien/src/index.ts")],
-      "alien/values": [resolve(root, "packages/alien/src/values/index.ts")],
+      "@alien-css/core": [resolve(root, "packages/alien/src/index.ts")],
+      "@alien-css/core/values": [resolve(root, "packages/alien/src/values/index.ts")],
     },
   };
   const host = ts.createCompilerHost(options);
@@ -36,8 +36,8 @@ function diagnostics(source: string, registry = "") {
 test("free styles and strict styles have distinct, checked contracts", () => {
   expect(
     diagnostics(`
-    import {alien, tokens, custom, type Style} from "alien";
-    import {hex, px, rgb} from "alien/values";
+    import {alien, tokens, custom, type Style} from "@alien-css/core";
+    import {hex, px, rgb} from "@alien-css/core/values";
     const free: Style<"free"> = {color:"red",padding:"12px",fontWeight:650};
     const strict: Style<"strict"> = {color:tokens.color.black,padding:tokens.space.md,width:"100%",display:"flex"};
     // @ts-expect-error strict components use color tokens
@@ -60,14 +60,14 @@ test("project augmentation exposes only declared names and applies strict mode t
   expect(
     diagnostics(
       `
-    import {alien,tokens} from "alien";
+    import {alien,tokens} from "@alien-css/core";
     alien.create({button:{color:tokens.color.brand,padding:tokens.space.control}});
     // @ts-expect-error stale token names must fail
     alien.create({button:{color:tokens.color.removed}});
     // @ts-expect-error project mode applies to the default API
     alien.create({button:{padding:"12px"}});
   `,
-      `import "alien"; declare module "alien" {interface AlienProject {mode:"strict";tokens:{color:"brand";space:"control"}}}`,
+      `import "@alien-css/core"; declare module "@alien-css/core" {interface AlienProject {mode:"strict";tokens:{color:"brand";space:"control"}}}`,
     ),
   ).toEqual([]);
 });

@@ -1,5 +1,7 @@
 #![doc = env!("CARGO_PKG_DESCRIPTION")]
 
+pub mod atomic;
+
 mod class_name;
 mod compile;
 mod error;
@@ -21,4 +23,7 @@ mod diagnostic;
 
 mod optimize;
 
-pub use transform::{ProjectSource, TransformedProject, transform_project};
+pub use transform::{
+    ProjectSource, TransformedProject, transform_atomic_project,
+    transform_atomic_project_with_isolation, transform_project,
+};

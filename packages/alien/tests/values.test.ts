@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { alien, tokens } from "alien";
-import { alpha, dvh, fr, hwb, mix, ms, percent, px, rem, rgb } from "alien/values";
+import { alien, tokens } from "@alien-css/core";
+import { alpha, dvh, fr, hwb, mix, ms, percent, px, rem, rgb } from "@alien-css/core/values";
 
 test("the public entry points share the built-in palette", () => {
   expect(alien.color).toBe(tokens.color);

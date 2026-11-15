@@ -1,4 +1,4 @@
-import type { NativeCompiler, SourceEdit } from "alien-compiler";
+import type { NativeCompiler, SourceEdit } from "@alien-css/compiler";
 
 export const isScript = (path: string) =>
   /\.(?:[cm]?[jt]s|[jt]sx)$/.test(path) && !/\.d\.[cm]?ts$/.test(path);

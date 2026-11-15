@@ -1,6 +1,6 @@
 # Alien CSS
 
-Typed TypeScript styles compiled to CSS by Rust, with Vite/webpack integrations, portable generation, and built-in design tokens. Style creation runs at build time. The emitted application uses CSS class names; `cx()` is a small optional runtime helper.
+Typed TypeScript styles compiled to CSS by Rust, with Vite/webpack integrations, portable generation, and built-in design tokens. Style creation runs at build time. Portable atomic generation uses the small `cx()` runtime helper; Vite/webpack and standard generation emit class strings directly.
 
 ## Develop
 
@@ -30,8 +30,8 @@ See the [framework guide and verified matrix](./docs/frameworks.md) for React, V
 Strict mode checks both TypeScript and the compiler. `custom()` cannot bypass these token families. Put custom values in `alien.globals.ts` instead:
 
 ```ts
-import { alien } from "alien";
-import { hex, rem } from "alien/values";
+import { alien } from "@alien-css/core";
+import { hex, rem } from "@alien-css/core/values";
 
 export default alien.globals({
   mode: "strict",
@@ -44,7 +44,7 @@ export default alien.globals({
 Then use the same imports as usual:
 
 ```ts
-import { alien, tokens } from "alien";
+import { alien, tokens } from "@alien-css/core";
 
 export const styles = alien.create({
   button: {
@@ -67,8 +67,15 @@ See the [reset levels](./syntaxe.md#optional-css-reset) for the rules each setti
 
 ## Integrate with Vite
 
+Install the runtime and Vite integration:
+
+```sh
+bun add @alien-css/core
+bun add -d @alien-css/vite
+```
+
 ```ts
-import alien from "alien-vite";
+import alien from "@alien-css/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({ plugins: [alien()] });
@@ -102,13 +109,30 @@ bun run test:package
 
 Packages expose compiled ESM and `.d.ts` files. A local native build produces a binary for the current host. On Linux, Alien detects glibc or musl and selects the corresponding binary.
 
-The [Native packages workflow](./.github/workflows/native-packages.yml) builds and smoke-tests eight targets with Node and Bun. It covers macOS and Windows on x64 and ARM64, plus both Linux libc variants on both architectures. After every target passes, the workflow installs the assembled archives in a temporary project, then uploads the four npm tarballs as `alien-npm-packages`. Download this artifact to get a release candidate. Publication requires a registry name you control, since `alien` is already registered on npm.
+The [Native packages workflow](./.github/workflows/native-packages.yml) builds and smoke-tests eight targets with Node and Bun. It covers macOS and Windows on x64 and ARM64, plus both Linux libc variants on both architectures. After every target passes, the workflow installs the assembled archives in a temporary project, then uploads the four npm tarballs as `alien-npm-packages`. Download this artifact to get a release candidate. Publish the four archives with `bun publish --access public <archive.tgz>` from an npm account with publish access to the `@alien-css` organization. Publish the core and compiler before the integrations.
 
 The package smoke test normally rebuilds a debug native binary. To retain a release binary for packaging, run `bun run build:native --release` after the smoke test and before packing.
 
 ## CSS size comparison
 
 Run `bun run bench:css` to compare Alien, Tailwind and StyleX on the same declarations. The [benchmark results](./docs/css-benchmark.md) include minified CSS, gzip and Brotli.
+
+Run `bun run bench:css --check` to require outright wins in all three CSS metrics. Use `bun run bench:css --standard` to measure the source-order-compatible generator separately. Both reports exclude JavaScript and runtime overhead.
+
+### Atomic project generation
+
+`bun run alien generate` now emits compact atomic descriptors in the generated modules. This changes the generated API: import the generated styles and use `cx()` even for a single style. Existing projects that need string class maps can keep them with `alien generate --standard`.
+
+```ts
+import { cx } from "@alien-css/core/cx";
+import { styles } from "./button.alien.generated";
+
+const className = cx(styles.button, styles.selected);
+```
+
+The default compact project prefix carries at most about 23.7 bits of identity, so independently generated stylesheets can collide. Use distinct project namespaces and check their generated class names against other CSS before combining them. The standard generator retains a longer project-scoped namespace. Generated descriptors support logical and physical padding and margin in either composition order. Manually constructed descriptors without the compiler’s ordering metadata can still be rejected when they overlap. Conditions with different pseudo-classes or breakpoints follow the compiler's fixed CSS condition order; `cx()` resolves conflicts at the same condition. The incremental Vite/webpack transforms still generate string class maps. Atomic descriptors and the `cx` runtime are not counted in the CSS benchmark.
+
+For independently built projects sharing a page, `bun run alien generate --atomic-isolation strong --namespace your-project` uses a 128-bit project prefix. Give each project a distinct namespace. Strong isolation increases CSS size substantially; the benchmark uses the compact prefix and its results do not apply to the strong option.
 
 ## Current scope
 
@@ -120,10 +144,10 @@ The Rust CLI emits CSS or validates an input file:
 cargo run -p alien-cli -- examples/react/src/button.tsx --globals examples/react/alien.globals.ts --check
 ```
 
-There is no theme system, variants API, keyframes builder, or arbitrary JavaScript evaluator yet. The compiler automatically combines grouped rules with shared atomic declarations when this reduces the combined raw CSS and class-map size. It resolves declarations once and compares bounded candidate plans using exact byte costs before emitting the chosen output. The optimizer works within each style block and keeps potentially conflicting declarations grouped. See the [optimization contract](./syntaxe.md#css-optimization) for its guarantees and limits.
+There is no theme system, variants API, keyframes builder, or arbitrary JavaScript evaluator yet. The standard compiler combines grouped rules with shared declarations when this reduces the combined raw CSS and class-map size. It resolves declarations once and compares bounded candidate plans using exact byte costs before emitting the chosen output. See the [optimization contract](./syntaxe.md#css-optimization) for its guarantees and limits; the default portable generator uses the atomic contract described above.
 
 ## Optimization and measurements
 
-Alien chooses between grouped declarations and shared classes using the combined size of CSS and generated class maps. Sharing respects shorthand conflicts, conditional overrides, importance, and source-order composition. Separate `alien.create()` calls in one module can share safe declarations; `alien generate` additionally optimizes the complete set of discovered style files.
+The standard generator and incremental transforms choose between grouped declarations and shared classes using the combined size of CSS and generated class maps. They preserve source-order composition. The default `alien generate` path instead shares atomic declarations across the complete project and uses `cx()` to resolve same-condition conflicts.
 
 See the [CSS size report](./docs/css-benchmark.md) and [complete-project integration](./docs/frameworks.md#complete-project-optimization) for measured results and tradeoffs. Run `bun run bench:css` to regenerate the English HTML/Markdown reports and inspect the exact CSS. Run `bun run bench:compiler` for native compilation timings and class-map sizes; compare timings on an otherwise idle machine.

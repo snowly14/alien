@@ -8,9 +8,9 @@ const repository = fileURLToPath(new URL("../", import.meta.url));
 const node = Bun.which("node");
 if (!node) throw new Error("Node.js is required to test framework CLIs.");
 const source =
-  'import {alien,tokens} from "alien";export const styles=alien.create({button:{color:tokens.color.brand,padding:tokens.space.control}});';
+  'import {alien,tokens} from "@alien-css/core";export const styles=alien.create({button:{color:tokens.color.brand,padding:tokens.space.control}});';
 const globals =
-  'import {alien} from "alien";export default alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"},space:{control:"13px"}});';
+  'import {alien} from "@alien-css/core";export default alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"},space:{control:"13px"}});';
 type Fixture = {
   name: string;
   cli: string;
@@ -27,7 +27,7 @@ const fixtures: Fixture[] = [
     output: "dist",
     files: {
       "astro.config.mjs":
-        'import {defineConfig} from "astro/config";import alien from "alien-vite";export default defineConfig({vite:{plugins:[alien()]}});',
+        'import {defineConfig} from "astro/config";import alien from "@alien-css/vite";export default defineConfig({vite:{plugins:[alien()]}});',
       "src/pages/index.astro": `---\n${source}\n---\n<html><head><title>Alien</title></head><body><button class={styles.button}>Hello</button></body></html>`,
     },
   },
@@ -38,7 +38,7 @@ const fixtures: Fixture[] = [
     output: "build",
     files: {
       "vite.config.js":
-        'import {sveltekit} from "@sveltejs/kit/vite";import adapter from "@sveltejs/adapter-static";import alien from "alien-vite";export default {plugins:[alien(),sveltekit({adapter:adapter()})]};',
+        'import {sveltekit} from "@sveltejs/kit/vite";import adapter from "@sveltejs/adapter-static";import alien from "@alien-css/vite";export default {plugins:[alien(),sveltekit({adapter:adapter()})]};',
       "src/app.html":
         '<!doctype html><html><head>%sveltekit.head%</head><body><div style="display:contents">%sveltekit.body%</div></body></html>',
       "src/routes/+page.svelte": `<script>${source.replace("export const", "const")}</script><button class={styles.button}>Hello</button>`,
@@ -52,7 +52,7 @@ const fixtures: Fixture[] = [
     output: ".output/public",
     files: {
       "nuxt.config.ts":
-        'import alien from "alien-vite";export default defineNuxtConfig({devtools:{enabled:false},telemetry:false,vite:{plugins:[alien({root:process.cwd()})]},compatibilityDate:"2026-11-13"});',
+        'import alien from "@alien-css/vite";export default defineNuxtConfig({devtools:{enabled:false},telemetry:false,vite:{plugins:[alien({root:process.cwd()})]},compatibilityDate:"2026-11-13"});',
       "app/app.vue": `<script setup>${source.replace("export const", "const")}</script><template><button :class="styles.button">Hello</button></template>`,
     },
   },
@@ -63,7 +63,7 @@ const fixtures: Fixture[] = [
     output: "out",
     files: {
       "next.config.mjs":
-        'import {alienRule} from "alien-webpack";export default {output:"export",webpack(config){config.module.rules.unshift(alienRule({root:process.cwd()}));return config;}};',
+        'import {alienRule} from "@alien-css/webpack";export default {output:"export",webpack(config){config.module.rules.unshift(alienRule({root:process.cwd()}));return config;}};',
       "app/layout.jsx":
         "export default function Layout({children}){return <html><body>{children}</body></html>}",
       "app/page.jsx": `${source.replace("export const", "const")}import Button from "./Button";export default function Page(){return <main className={styles.button}><Button/></main>}`,
@@ -82,7 +82,7 @@ const fixtures: Fixture[] = [
       "app/layout.jsx":
         'import "../.alien/styles.css";export default function Layout({children}){return <html><body>{children}</body></html>}',
       "app/page.jsx":
-        'import {styles} from "../src/button.alien.generated";export default function Page(){return <button className={styles.button}>Hello</button>}',
+        'import {cx} from "@alien-css/core/cx";import {styles} from "../src/button.alien.generated";export default function Page(){return <button className={cx(styles.button)}>Hello</button>}',
     },
   },
   {
@@ -94,7 +94,7 @@ const fixtures: Fixture[] = [
     files: {
       "src/button.alien.ts": source,
       "src/main.ts":
-        'import {Component} from "@angular/core";import {bootstrapApplication} from "@angular/platform-browser";import {styles} from "./button.alien.generated";@Component({selector:"app-root",standalone:true,template:`<button [class]="styles.button">Hello</button>`})class App{readonly styles=styles;}bootstrapApplication(App);',
+        'import {Component} from "@angular/core";import {bootstrapApplication} from "@angular/platform-browser";import {cx} from "@alien-css/core/cx";import {styles} from "./button.alien.generated";@Component({selector:"app-root",standalone:true,template:`<button [class]="buttonClass">Hello</button>`})class App{readonly buttonClass=cx(styles.button);}bootstrapApplication(App);',
       "src/index.html":
         '<!doctype html><html><head><title>Alien</title><base href="/"></head><body><app-root></app-root></body></html>',
       "tsconfig.json": JSON.stringify({
@@ -164,7 +164,7 @@ for (const fixture of fixtures.filter(
       );
       if (await pack.exited) throw new Error("Could not pack Alien for Turbopack fixture");
       const dependencies: Record<string, string> = {
-        alien: "file:./alien.tgz",
+        "@alien-css/core": "file:./alien.tgz",
         typescript: "~6.0.3",
         "@types/react": "^19.0.0",
         "@types/node": "^26.0.0",
@@ -190,11 +190,19 @@ for (const fixture of fixtures.filter(
       if (await install.exited) throw new Error("Could not install isolated Turbopack fixture");
     } else {
       await mkdir(join(root, "node_modules"));
+      const alienPackages = new Map([
+        ["@alien-css/core", "alien"],
+        ["@alien-css/compiler", "alien-compiler"],
+        ["@alien-css/vite", "alien-vite"],
+        ["@alien-css/webpack", "alien-webpack"],
+      ]);
       for (const name of await readdir(join(repository, "node_modules"))) {
+        if (name === "@alien-css") continue;
         await symlink(join(repository, "node_modules", name), join(root, "node_modules", name));
       }
-      for (const name of ["alien", "alien-compiler", "alien-vite", "alien-webpack"])
-        await symlink(join(repository, "packages", name), join(root, "node_modules", name));
+      await mkdir(join(root, "node_modules", "@alien-css"));
+      for (const [name, directory] of alienPackages)
+        await symlink(join(repository, "packages", directory), join(root, "node_modules", name));
       // Vite is a workspace dependency of the React example, not the repository root.
       if (!(await Bun.file(join(root, "node_modules/vite/package.json")).exists()))
         await symlink(
@@ -250,8 +258,14 @@ for (const fixture of fixtures.filter(
           artifacts.filter((path) => path.endsWith(".html")).map((path) => readFile(path, "utf8")),
         )
       ).join("\n");
-      if (!/class="a_\w+/.test(html))
-        throw new Error(`${fixture.name}: rendered HTML has no Alien class`);
+      const renderedClasses = new Set(
+        [...html.matchAll(/class="([^"]+)"/g)].flatMap((match) => (match[1] ?? "").split(/\s+/)),
+      );
+      const matchingRules = [
+        ...text.matchAll(/\.([A-Za-z_][\w-]*)\{[^{}]*?(?:color:#123456|padding:13px)/g),
+      ];
+      if (!matchingRules.some((match) => match[1] && renderedClasses.has(match[1])))
+        throw new Error(`${fixture.name}: rendered HTML has no class matching compiled Alien CSS`);
     }
     console.log(
       `${fixture.name}: build, CSS/reset and ${fixture.name === "Angular" ? "AOT compilation" : "rendered classes"} passed.`,

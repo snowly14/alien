@@ -19,7 +19,11 @@ pub(super) fn validate_usage(
 ) -> Result<(), Vec<String>> {
     let mut roots = Vec::new();
     for_each_import(program, |import| {
-        if import.source.value.as_str() != Some("alien") || import.import_kind.is_type() {
+        if !matches!(
+            import.source.value.as_str(),
+            Some("alien" | "@alien-css/core")
+        ) || import.import_kind.is_type()
+        {
             return;
         }
         for specifier in import.specifiers.iter().flatten() {

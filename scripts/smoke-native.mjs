@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { loadCompiler } from "../packages/alien-compiler/dist/index.js";
 
 const output = loadCompiler().transform(
-  'import { alien } from "alien"; export const styles = alien.create({ button: { display: "flex" } });',
+  'import { alien } from "@alien-css/core"; export const styles = alien.create({ button: { display: "flex" } });',
   "button.ts",
   "./button.ts",
 );
@@ -11,7 +11,7 @@ assert.match(output?.code ?? "", /"button"/);
 
 const project = loadCompiler().transformProject(
   ["first", "second"].map((name) => ({
-    source: 'import { alien } from "alien"; export const styles = alien.create({ button: { display: "flex" } });',
+    source: 'import { alien } from "@alien-css/core"; export const styles = alien.create({ button: { display: "flex" } });',
     path: `${name}.ts`,
     moduleId: `./${name}.ts`,
   })),

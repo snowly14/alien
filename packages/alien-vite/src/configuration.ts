@@ -1,1 +1,1 @@
-export { prepareProject, projectDeclarations } from "alien-compiler";
+export { prepareProject, projectDeclarations } from "@alien-css/compiler";

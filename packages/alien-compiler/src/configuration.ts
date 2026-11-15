@@ -24,7 +24,7 @@ export function projectDeclarations(compiler: NativeCompiler): string {
           .join(" | ")};`,
     )
     .join("\n");
-  return `${generatedHeader}import "alien";\ndeclare module "alien" {\n  interface AlienProject {\n    mode: ${JSON.stringify(compiler.mode)};\n    tokens: {\n${tokens}\n    };\n  }\n}\n`;
+  return `${generatedHeader}import "@alien-css/core";\ndeclare module "@alien-css/core" {\n  interface AlienProject {\n    mode: ${JSON.stringify(compiler.mode)};\n    tokens: {\n${tokens}\n    };\n  }\n}\n`;
 }
 
 async function readOptional(path: string): Promise<string | undefined> {

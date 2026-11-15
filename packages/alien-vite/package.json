@@ -1,6 +1,6 @@
 {
-  "name": "alien-vite",
-  "version": "0.0.1",
+  "name": "@alien-css/vite",
+  "version": "0.1.0",
   "type": "module",
   "license": "MIT",
   "exports": {
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "magic-string": "^0.30.21",
-    "alien-compiler": "workspace:*"
+    "@alien-css/compiler": "workspace:*"
   },
   "bin": {
     "alien": "./dist/cli.js"
@@ -43,5 +43,24 @@
     "@astrojs/compiler": {
       "optional": true
     }
+  },
+  "description": "Vite integration for Alien CSS.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snowly14/alien.git",
+    "directory": "packages/alien-vite"
+  },
+  "homepage": "https://github.com/snowly14/alien#readme",
+  "bugs": {
+    "url": "https://github.com/snowly14/alien/issues"
+  },
+  "keywords": [
+    "css",
+    "typescript",
+    "styling",
+    "alien-css"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

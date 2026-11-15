@@ -8,223 +8,223 @@
     "gzip": 9,
     "brotli": 11
   },
-  "alienCompilation": "whole-project",
+  "alienCompilation": "whole-project-atomic",
   "percentageResults": [
     {
       "scenario": "One button",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": 77.41228070175438
+      "savingsPercent": 72.80701754385966
     },
     {
       "scenario": "One button",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": 63.76518218623482
+      "savingsPercent": 64.77732793522267
     },
     {
       "scenario": "One button",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": 72.53012048192771
+      "savingsPercent": 70.12048192771084
     },
     {
       "scenario": "One button",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": 41.31054131054131
+      "savingsPercent": 29.34472934472934
     },
     {
       "scenario": "One button",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": 21.145374449339208
+      "savingsPercent": 23.348017621145374
     },
     {
       "scenario": "One button",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": 33.33333333333333
+      "savingsPercent": 27.485380116959064
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": 68.37294332723948
+      "savingsPercent": 67.18464351005484
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": 57.95246800731262
+      "savingsPercent": 59.96343692870201
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": 66.4488017429194
+      "savingsPercent": 62.745098039215684
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": 30.1010101010101
+      "savingsPercent": 27.474747474747474
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": 20.13888888888889
+      "savingsPercent": 23.958333333333336
     },
     {
       "scenario": "Button with focus and breakpoint",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": 30.630630630630627
+      "savingsPercent": 22.972972972972975
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": -2580.2721088435374
+      "savingsPercent": 76.19047619047619
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": -129.92700729927006
+      "savingsPercent": 65.69343065693431
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": -84.03361344537815
+      "savingsPercent": 67.22689075630252
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": -9750
+      "savingsPercent": 12.5
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": -472.72727272727275
+      "savingsPercent": 14.545454545454545
     },
     {
       "scenario": "100 alternating color variants",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": -397.7272727272727
+      "savingsPercent": 11.363636363636363
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": -129.38659058487875
+      "savingsPercent": 17.660485021398003
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": 25.8
+      "savingsPercent": 30.4
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": 36.607142857142854
+      "savingsPercent": 41.964285714285715
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": -49.58139534883721
+      "savingsPercent": 46.306976744186045
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": 33.153153153153156
+      "savingsPercent": 37.2972972972973
     },
     {
       "scenario": "100 cards and buttons, one module",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": 49.645390070921984
+      "savingsPercent": 53.90070921985816
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": -129.50071326676178
+      "savingsPercent": 17.660485021398003
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": 25.7
+      "savingsPercent": 30.5
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": 36.904761904761905
+      "savingsPercent": 41.36904761904761
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": -49.65581395348837
+      "savingsPercent": 46.306976744186045
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": 33.06306306306306
+      "savingsPercent": 37.38738738738739
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": 49.881796690307326
+      "savingsPercent": 53.42789598108747
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "Tailwind",
       "metric": "minified",
-      "savingsPercent": -3.7136809697902637
+      "savingsPercent": 22.108908985953434
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "Tailwind",
       "metric": "gzip",
-      "savingsPercent": 19.957310565635005
+      "savingsPercent": 16.862326574172894
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "Tailwind",
       "metric": "brotli",
-      "savingsPercent": 26.705653021442494
+      "savingsPercent": 19.68810916179337
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "StyleX",
       "metric": "minified",
-      "savingsPercent": -22.97513118868355
+      "savingsPercent": 7.643166780743783
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "StyleX",
       "metric": "gzip",
-      "savingsPercent": 52.29007633587786
+      "savingsPercent": 50.445292620865146
     },
     {
       "scenario": "100 distinct width/height pairs",
       "competitor": "StyleX",
       "metric": "brotli",
-      "savingsPercent": 68.69275603663614
+      "savingsPercent": 65.69525395503747
     }
   ],
   "winners": [
@@ -260,13 +260,13 @@
       "scenario": "100 alternating color variants",
       "metrics": {
         "minified": [
-          "StyleX"
+          "Alien"
         ],
         "gzip": [
-          "StyleX"
+          "Alien"
         ],
         "brotli": [
-          "StyleX"
+          "Alien"
         ]
       }
     },
@@ -274,7 +274,7 @@
       "scenario": "100 cards and buttons, one module",
       "metrics": {
         "minified": [
-          "Tailwind"
+          "Alien"
         ],
         "gzip": [
           "Alien"
@@ -288,7 +288,7 @@
       "scenario": "100 cards and buttons, 20 modules",
       "metrics": {
         "minified": [
-          "Tailwind"
+          "Alien"
         ],
         "gzip": [
           "Alien"
@@ -302,7 +302,7 @@
       "scenario": "100 distinct width/height pairs",
       "metrics": {
         "minified": [
-          "StyleX"
+          "Alien"
         ],
         "gzip": [
           "Alien"
@@ -317,15 +317,15 @@
     {
       "tool": "Alien",
       "wins": {
-        "minified": 2,
-        "gzip": 5,
-        "brotli": 5
+        "minified": 6,
+        "gzip": 6,
+        "brotli": 6
       }
     },
     {
       "tool": "Tailwind",
       "wins": {
-        "minified": 2,
+        "minified": 0,
         "gzip": 0,
         "brotli": 0
       }
@@ -333,9 +333,9 @@
     {
       "tool": "StyleX",
       "wins": {
-        "minified": 2,
-        "gzip": 1,
-        "brotli": 1
+        "minified": 0,
+        "gzip": 0,
+        "brotli": 0
       }
     }
   ],
@@ -343,9 +343,9 @@
     {
       "scenario": "One button",
       "tool": "Alien",
-      "minified": 206,
-      "gzip": 179,
-      "brotli": 114
+      "minified": 248,
+      "gzip": 174,
+      "brotli": 124
     },
     {
       "scenario": "One button",
@@ -364,9 +364,9 @@
     {
       "scenario": "Button with focus and breakpoint",
       "tool": "Alien",
-      "minified": 346,
-      "gzip": 230,
-      "brotli": 154
+      "minified": 359,
+      "gzip": 219,
+      "brotli": 171
     },
     {
       "scenario": "Button with focus and breakpoint",
@@ -385,9 +385,9 @@
     {
       "scenario": "100 alternating color variants",
       "tool": "Alien",
-      "minified": 3940,
-      "gzip": 315,
-      "brotli": 219
+      "minified": 35,
+      "gzip": 47,
+      "brotli": 39
     },
     {
       "scenario": "100 alternating color variants",
@@ -406,9 +406,9 @@
     {
       "scenario": "100 cards and buttons, one module",
       "tool": "Alien",
-      "minified": 8040,
-      "gzip": 742,
-      "brotli": 426
+      "minified": 2886,
+      "gzip": 696,
+      "brotli": 390
     },
     {
       "scenario": "100 cards and buttons, one module",
@@ -427,9 +427,9 @@
     {
       "scenario": "100 cards and buttons, 20 modules",
       "tool": "Alien",
-      "minified": 8044,
-      "gzip": 743,
-      "brotli": 424
+      "minified": 2886,
+      "gzip": 695,
+      "brotli": 394
     },
     {
       "scenario": "100 cards and buttons, 20 modules",
@@ -448,9 +448,9 @@
     {
       "scenario": "100 distinct width/height pairs",
       "tool": "Alien",
-      "minified": 5390,
-      "gzip": 750,
-      "brotli": 376
+      "minified": 4048,
+      "gzip": 779,
+      "brotli": 412
     },
     {
       "scenario": "100 distinct width/height pairs",

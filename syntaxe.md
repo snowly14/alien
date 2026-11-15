@@ -23,8 +23,8 @@ This document describes implemented behavior. The broader [initial proposal](./d
 ## Project tokens
 
 ```ts
-import { alien } from "alien";
-import { hex, ms, rem } from "alien/values";
+import { alien } from "@alien-css/core";
+import { hex, ms, rem } from "@alien-css/core/values";
 
 export default alien.globals({
   mode: "strict",
@@ -47,7 +47,7 @@ Configuration permits imports and exactly one direct `alien.globals({...})` call
 Configure the reset independently of the project mode.
 
 ```ts
-import { alien } from "alien";
+import { alien } from "@alien-css/core";
 
 export default alien.globals({ reset: "medium" });
 ```
@@ -62,8 +62,8 @@ The Vite plugin applies the reset to HTML entries. The `alien-reset` layer lets 
 ## Static component syntax
 
 ```ts
-import { alien, css, tokens } from "alien";
-import { alpha, percent, px } from "alien/values";
+import { alien, css, tokens } from "@alien-css/core";
+import { alpha, percent, px } from "@alien-css/core/values";
 
 export const styles = alien.create({
   button: {
@@ -106,17 +106,17 @@ Rules are sorted by pseudo-class specificity, then ascending breakpoint width, t
 
 `border`, `transition`, and `animation` emit individual provided longhands. Missing fields do not reset other fields. A transition property list shares one duration, delay and easing; independent timing tracks are not implemented.
 
-`cx()` joins classes and ignores `false`, `null`, `undefined` and empty strings. Argument order does not override CSS cascade order. There is no variants or composition-merging API.
+`cx()` ignores `false`, `null`, `undefined` and empty strings. For ordinary class strings, argument order does not override CSS cascade order. For descriptors emitted by the default `alien generate` path, it resolves the same property and condition in argument order, with `!important` taking priority. Apply `cx()` even to a single generated style. Conditions use the compiler's fixed precedence. `alien generate --standard` and the incremental Vite/webpack integrations emit ordinary class strings instead. There is no variants API.
 
 ## Tooling
 
 The Vite plugin transforms JavaScript/JSX and TypeScript/TSX modules, Vue/Svelte script blocks, and Astro frontmatter. It runs before framework transforms, skips declaration files, dependency files and query-bearing module IDs, emits source maps, caches unchanged source, and updates virtual stylesheets during development. Configuration changes regenerate types and trigger a full reload; additions and deletions are handled too.
 
-Class names use a stable 128-bit SHA-256 prefix derived from the project namespace and module path, followed by a per-module index. The plugin detects prefix conflicts among modules it observes. Independently built projects sharing CSS must use distinct namespaces. The low-level Rust `compile_styles` and `compile_typescript` helpers still use local `a0`, `a1`, ... names: their results are isolated outputs. Use `transform_with_config` / `transform_typescript` with unique module IDs when combining modules.
+Vite and webpack class names use a stable 128-bit SHA-256 prefix derived from the project namespace and module path, followed by a per-module index. The plugin detects prefix conflicts among modules it observes. The default portable atomic generator instead uses a compact prefix with a collision risk; select `--atomic-isolation strong` for a 128-bit prefix when independently built stylesheets share a page. Use distinct namespaces. The low-level Rust `compile_styles` and `compile_typescript` helpers still use local `a0`, `a1`, ... names: their results are isolated outputs. Use `transform_with_config` / `transform_typescript` with unique module IDs when combining modules.
 
 ## CSS optimization
 
-The compiler compares grouped output with a hybrid of grouped rules and shared atomic declarations. It accepts a change only when the combined uncompressed CSS and JavaScript class map is smaller. It shares unconditional declarations only when no other declaration in the same style block conflicts with that property, and preserves grouped output otherwise. Adjacent identical styles can share a class.
+The standard generator and incremental compiler compare grouped output with a hybrid of grouped rules and shared declarations. They accept a change only when the combined uncompressed CSS and JavaScript class map is smaller. They share unconditional declarations only when no other declaration in the same style block conflicts with that property, and preserve grouped output otherwise. Adjacent identical styles can share a class. The default portable atomic generator uses a different approach: it emits atomic descriptors and resolves same-condition conflicts with `cx()`; see [atomic composition](./docs/composition.md).
 
 Optimization is local to an `alien.create()` block. The search ranks repeated declarations by potential byte savings and considers up to 64 safe candidates. It explores incremental additions starting from grouped rules and incremental removals starting from all candidates. This second direction can find profitable combinations even when adding their members individually would increase size.
 

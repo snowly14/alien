@@ -80,7 +80,11 @@ pub(super) fn for_each_alien_binding<'source>(
     mut visit: impl FnMut(ImportKind<'source>, &'source str),
 ) {
     let module = declaration.source.value.as_str();
-    if !matches!(module, Some("alien" | "alien/values")) || declaration.import_kind.is_type() {
+    if !matches!(
+        module,
+        Some("alien" | "alien/values" | "@alien-css/core" | "@alien-css/core/values")
+    ) || declaration.import_kind.is_type()
+    {
         return;
     }
 
@@ -89,11 +93,13 @@ pub(super) fn for_each_alien_binding<'source>(
             && !specifier.import_kind.is_type()
         {
             let kind = match (module, specifier.imported.name().as_str()) {
-                (Some("alien"), "alien") => ImportKind::Alien,
-                (Some("alien"), "tokens") => ImportKind::Tokens,
-                (Some("alien"), "css") => ImportKind::Css,
-                (Some("alien"), "custom") => ImportKind::Custom,
-                (Some("alien/values"), export) => ImportKind::Value(export),
+                (Some("alien" | "@alien-css/core"), "alien") => ImportKind::Alien,
+                (Some("alien" | "@alien-css/core"), "tokens") => ImportKind::Tokens,
+                (Some("alien" | "@alien-css/core"), "css") => ImportKind::Css,
+                (Some("alien" | "@alien-css/core"), "custom") => ImportKind::Custom,
+                (Some("alien/values" | "@alien-css/core/values"), export) => {
+                    ImportKind::Value(export)
+                }
                 _ => continue,
             };
             visit(kind, specifier.local.name.as_str());

@@ -14,6 +14,18 @@ test("last style wins per property without dropping unrelated declarations", () 
   expect(composeAtomicStyles([blue, red])).toBe("red top");
 });
 
+test("important declarations override normal declarations at the same condition", () => {
+  const important = [{ ...atom("color", "important-red"), important: true }];
+  const normal = [atom("color", "blue"), atom("width", "wide")];
+  const laterImportant = [{ ...atom("color", "important-green"), important: true }];
+  expect(composeAtomicStyles([important, normal])).toBe("important-red wide");
+  expect(composeAtomicStyles([normal, important])).toBe("wide important-red");
+  expect(composeAtomicStyles([important, normal, laterImportant])).toBe("wide important-green");
+  expect(composeAtomicStyles([important, [atom("color", "hover-blue", ":hover")]])).toBe(
+    "important-red hover-blue",
+  );
+});
+
 test("expanded shorthands retain sides that a later longhand does not override", () => {
   const padding = ["top", "right", "bottom", "left"].map((side) =>
     atom(`padding-${side}`, `p-${side}`),

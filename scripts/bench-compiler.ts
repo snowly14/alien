@@ -2,10 +2,10 @@ import { arch, cpus, loadavg, platform } from "node:os";
 import { loadCompiler } from "../packages/alien-vite/src/native";
 
 const compiler = loadCompiler();
-const button = `import {alien,tokens} from "alien";import {px} from "alien/values";
+const button = `import {alien,tokens} from "@alien-css/core";import {px} from "@alien-css/core/values";
 export const styles=alien.create({button:{display:"flex",padding:tokens.space.md,color:tokens.color.green[600],width:px(4*20),on:{hover:{color:tokens.color.green[700]},breakpoint:{md:{padding:tokens.space.lg}}}}});`;
 function styles(count: number, shared: boolean) {
-  return `import {alien,tokens} from "alien";import {px} from "alien/values";
+  return `import {alien,tokens} from "@alien-css/core";import {px} from "@alien-css/core/values";
 export const styles=alien.create({${Array.from(
     { length: count },
     (_, i) =>

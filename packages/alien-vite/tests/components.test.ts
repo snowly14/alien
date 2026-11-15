@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
-import { loadCompiler } from "alien-compiler";
+import { loadCompiler } from "@alien-css/compiler";
 import MagicString from "magic-string";
 import { transformModule } from "../src/components.ts";
 
 const compiler = loadCompiler();
 const script =
-  'import {alien as ui} from "alien";const title="👽";const styles=ui.create({button:{color:"red"}});';
+  'import {alien as ui} from "@alien-css/core";const title="👽";const styles=ui.create({button:{color:"red"}});';
 for (const [extension, source] of [
   ["vue", `<template>👽</template><script lang="ts">${script}</script>`],
   [

@@ -1,5 +1,5 @@
-import { alien } from "alien";
-import { rem } from "alien/values";
+import { alien } from "@alien-css/core";
+import { rem } from "@alien-css/core/values";
 
 export default alien.globals({
   mode: "strict",

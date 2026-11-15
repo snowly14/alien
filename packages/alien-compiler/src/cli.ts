@@ -5,7 +5,7 @@ import { prepareProject } from "./configuration.ts";
 import { type GenerateOptions, generateProject, isStyleSource } from "./generate.ts";
 
 const usage =
-  "Usage: alien prepare [project-root] [--globals path]\n       alien generate [project-root] [--source src] [--globals path] [--namespace name] [--watch]";
+  "Usage: alien prepare [project-root] [--globals path]\n       alien generate [project-root] [--source src] [--globals path] [--namespace name] [--watch] [--standard] [--atomic-isolation compact|strong]";
 function parseArguments(args: string[]) {
   const [command, ...options] = args;
   if (command !== "prepare" && command !== "generate") throw new Error(usage);
@@ -14,6 +14,23 @@ function parseArguments(args: string[]) {
   const config: GenerateOptions = {};
   const remaining = options.values();
   for (const option of remaining) {
+    if (option === "--standard" && command === "generate") {
+      if (config.standard) throw new Error(`Duplicate option: ${option}`);
+      config.standard = true;
+      continue;
+    }
+    if (option === "--atomic-isolation" && command === "generate") {
+      const value = remaining.next().value;
+      if (config.atomicIsolation || (value !== "compact" && value !== "strong"))
+        throw new Error(`--atomic-isolation requires compact or strong.\n${usage}`);
+      config.atomicIsolation = value;
+      continue;
+    }
+    if (option === "--experimental-atomic" && command === "generate") {
+      if (config.experimentalAtomic) throw new Error(`Duplicate option: ${option}`);
+      config.experimentalAtomic = true;
+      continue;
+    }
     if (option === "--watch" && command === "generate") {
       watching = true;
       continue;
@@ -23,7 +40,7 @@ function parseArguments(args: string[]) {
       (command === "generate" && ["--source", "--namespace"].includes(option))
     ) {
       const value = remaining.next().value;
-      const key = option.slice(2) as keyof GenerateOptions;
+      const key = option.slice(2) as "globals" | "source" | "namespace";
       if (config[key] !== undefined || !value || value.startsWith("-"))
         throw new Error(`${option} requires exactly one value.\n${usage}`);
       config[key] = value;
@@ -49,6 +66,10 @@ try {
     const generate = async () => {
       const result = await generateProject(root, config);
       console.log(`Alien: ${result.modules} modules generated; CSS: ${result.cssPath}`);
+      if (!config.standard && config.atomicIsolation !== "strong")
+        console.log(
+          "Alien: compact atomic names can collide across projects; use --atomic-isolation strong when isolation is required.",
+        );
     };
     if (!watching) await generate();
     else {

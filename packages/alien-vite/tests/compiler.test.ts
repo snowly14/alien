@@ -2,11 +2,11 @@ import { expect, test } from "bun:test";
 import { projectDeclarations } from "../src/configuration.ts";
 import { loadCompiler } from "../src/native.ts";
 
-const imports = `import { alien, css, custom, tokens } from "alien";
-import { alpha, calc, hex, hsl, hsv, hwb, mix, ms, oklch, percent, px, rem, rgb } from "alien/values";`;
+const imports = `import { alien, css, custom, tokens } from "@alien-css/core";
+import { alpha, calc, hex, hsl, hsv, hwb, mix, ms, oklch, percent, px, rem, rgb } from "@alien-css/core/values";`;
 const free = loadCompiler();
-const strict = loadCompiler(`import {alien} from "alien";
-import {hex, rem} from "alien/values";
+const strict = loadCompiler(`import {alien} from "@alien-css/core";
+import {hex, rem} from "@alien-css/core/values";
 export default alien.globals({mode:"strict", color:{brand:hex("#123456")}, space:{control:rem(0.625)}, radius:{control:"0.5rem"},fontWeight:{label:650}});`);
 
 function compile(style: string, compiler = free) {
@@ -86,7 +86,7 @@ test("default exports compile, but dynamic calls, namespace calls and aliases fa
   ).toContain("display:flex");
   for (const source of [
     `${imports}\nfunction styles(){return alien.create({a:{display:"flex"}})}`,
-    `import * as A from "alien"; const s=A.alien.create({a:{display:"flex"}});`,
+    `import * as A from "@alien-css/core"; const s=A.alien.create({a:{display:"flex"}});`,
     `${imports}\nconst create=alien.create; const styles=create({a:{}});`,
     `${imports}\nconst api=alien; const styles=api.create({a:{}});`,
   ])
@@ -121,7 +121,7 @@ test("configuration is static, checked eagerly, and cannot replace built-in name
     'alien.globals({mode:"free"});alien.globals({mode:"strict"})',
     'alien.globals({space:{constructor:"1rem"}})',
   ])
-    expect(() => loadCompiler(`import {alien} from "alien";${source}`)).toThrow();
+    expect(() => loadCompiler(`import {alien} from "@alien-css/core";${source}`)).toThrow();
   expect(strict.mode).toBe("strict");
   expect(strict.tokenPaths).toContain("color.brand");
   expect(projectDeclarations(strict)).toContain('mode: "strict"');

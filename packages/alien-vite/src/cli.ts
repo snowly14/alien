@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import "alien-compiler/cli";
+import "@alien-css/compiler/cli";

@@ -16,3 +16,4 @@ alien-parser.workspace = true
 alien-ir.workspace = true
 alien-emit.workspace = true
 sha2 = "0.10"
+serde_json = "1"

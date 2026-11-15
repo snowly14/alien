@@ -14,18 +14,18 @@ test("a real Vite build emits strict project CSS and source maps without runtime
   try {
     await writeFile(
       join(root, "alien.globals.ts"),
-      'import {alien} from "alien";export default alien.globals({mode:"strict",color:{brand:"#123456"},space:{control:"12px"}})',
+      'import {alien} from "@alien-css/core";export default alien.globals({mode:"strict",color:{brand:"#123456"},space:{control:"12px"}})',
     );
     await writeFile(
       join(root, "main.ts"),
-      'import {alien,tokens} from "alien";const title="👽";export const styles=alien.create({button:{color:tokens.color.brand,padding:tokens.space.control}});export {title};',
+      'import {alien,tokens} from "@alien-css/core";const title="👽";export const styles=alien.create({button:{color:tokens.color.brand,padding:tokens.space.control}});export {title};',
     );
     const result = await build({
       configFile: false,
       root,
       logLevel: "silent",
       plugins: [alien({ namespace: "integration" })],
-      resolve: { alias: { alien: entryPoint } },
+      resolve: { alias: { "@alien-css/core": entryPoint } },
       build: {
         write: false,
         sourcemap: true,
@@ -60,13 +60,13 @@ test("preparation removes stale token names and preserves handwritten declaratio
     const types = join(root, "alien-env.d.ts");
     await writeFile(
       config,
-      'import {alien} from "alien";alien.globals({mode:"strict",color:{old:"red"}})',
+      'import {alien} from "@alien-css/core";alien.globals({mode:"strict",color:{old:"red"}})',
     );
     await prepareProject(root);
     expect(await readFile(types, "utf8")).toContain('"old"');
     await writeFile(
       config,
-      'import {alien} from "alien";alien.globals({mode:"free",color:{new:"blue"}})',
+      'import {alien} from "@alien-css/core";alien.globals({mode:"free",color:{new:"blue"}})',
     );
     await prepareProject(root);
     const updated = await readFile(types, "utf8");
@@ -93,14 +93,14 @@ test("development updates refresh CSS and reload project configuration", async (
   const entry = join(root, "main.ts");
   const config = join(root, "alien.globals.ts");
   const source = (color: string) =>
-    `import {alien} from "alien";export const s=alien.create({a:{color:${color}}});`;
+    `import {alien} from "@alien-css/core";export const s=alien.create({a:{color:${color}}});`;
   await writeFile(entry, source('"red"'));
   const server = await createServer({
     configFile: false,
     root,
     logLevel: "silent",
     plugins: [alien({ namespace: "hmr-test" })],
-    resolve: { alias: { alien: entryPoint } },
+    resolve: { alias: { "@alien-css/core": entryPoint } },
     server: { middlewareMode: true, watch: null },
     optimizeDeps: { noDiscovery: true },
   });
@@ -145,7 +145,7 @@ test("development updates refresh CSS and reload project configuration", async (
     expect((await server.transformRequest(cssId))?.code).toContain("color:blue");
     await writeFile(
       config,
-      'import {alien} from "alien";alien.globals({mode:"strict",reset:"medium",color:{brand:"#123456"}});',
+      'import {alien} from "@alien-css/core";alien.globals({mode:"strict",reset:"medium",color:{brand:"#123456"}});',
     );
     server.watcher.emit("add", config);
     await waitForUpdate();
@@ -183,7 +183,7 @@ test("the optional reset is emitted in HTML builds without Alien style calls", a
     ] as const) {
       await writeFile(
         join(root, "alien.globals.ts"),
-        `import {alien} from "alien"; alien.globals({${option ? `reset:${option}` : ""}});`,
+        `import {alien} from "@alien-css/core"; alien.globals({${option ? `reset:${option}` : ""}});`,
       );
       const result = await build({
         configFile: false,
@@ -215,7 +215,7 @@ test("the optional reset is emitted in HTML builds without Alien style calls", a
     }
     await writeFile(
       join(root, "alien.globals.ts"),
-      'import {alien} from "alien"; alien.globals({reset:"maximum"});',
+      'import {alien} from "@alien-css/core"; alien.globals({reset:"maximum"});',
     );
     await expect(prepareProject(root)).rejects.toThrow("reset must be false");
   } finally {
@@ -239,7 +239,7 @@ for (const framework of ["vue", "svelte"] as const)
     const fileName = `App.${framework}`;
     const entry = join(root, fileName);
     const source = (color: string) => {
-      const script = `import {alien} from "alien";const s=alien.create({button:{color:"${color}"}});`;
+      const script = `import {alien} from "@alien-css/core";const s=alien.create({button:{color:"${color}"}});`;
       return framework === "vue"
         ? `<script setup lang="ts">${script}</script><template><button :class="s.button">Hello</button></template>`
         : `<script lang="ts">${script}</script><button class={s.button}>Hello</button>`;
@@ -250,7 +250,7 @@ for (const framework of ["vue", "svelte"] as const)
       root,
       logLevel: "silent",
       plugins: [alien(), frameworkPlugin],
-      resolve: { alias: { alien: entryPoint } },
+      resolve: { alias: { "@alien-css/core": entryPoint } },
       server: { middlewareMode: true, watch: null },
       optimizeDeps: { noDiscovery: true },
     });

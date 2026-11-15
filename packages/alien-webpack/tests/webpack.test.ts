@@ -20,11 +20,11 @@ test("webpack extracts static CSS, keeps directives and includes the configured 
     );
     await writeFile(
       join(root, "alien.globals.ts"),
-      'import {alien} from "alien";alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"}});',
+      'import {alien} from "@alien-css/core";alien.globals({mode:"strict",reset:"light",color:{brand:"#123456"}});',
     );
     await writeFile(
       join(root, "entry.js"),
-      '"use client";import {alien,tokens} from "alien";export const s=alien.create({button:{color:tokens.color.brand}});',
+      '"use client";import {alien,tokens} from "@alien-css/core";export const s=alien.create({button:{color:tokens.color.brand}});',
     );
     const compiler = webpack({
       mode: "production",
@@ -32,7 +32,7 @@ test("webpack extracts static CSS, keeps directives and includes the configured 
       entry: join(root, "entry.js"),
       output: { path: join(root, "dist"), filename: "app.js", library: { type: "module" } },
       experiments: { outputModule: true },
-      resolve: { alias: { alien: alienEntry } },
+      resolve: { alias: { "@alien-css/core": alienEntry } },
       module: {
         rules: [
           alienRule({ namespace: "webpack-test" }),

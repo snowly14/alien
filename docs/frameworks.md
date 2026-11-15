@@ -1,6 +1,6 @@
 # Framework integration
 
-Alien emits ordinary class names and CSS. The integration must compile style definitions **before** a framework turns components into JavaScript functions. Choose one integration path per source file; do not import both a `.alien.ts` definition and its generated module.
+Alien emits CSS and either class strings or atomic descriptors. The integration must compile style definitions **before** a framework turns components into JavaScript functions. Choose one integration path per source file; do not import both a `.alien.ts` definition and its generated module.
 
 ## Verified build matrix
 
@@ -33,14 +33,14 @@ Use named ES imports from `alien` and `alien/values`. CommonJS `require()` style
 ## React, Solid and Vue with Vite
 
 ```sh
-bun add alien
-bun add -d alien-vite
+bun add @alien-css/core
+bun add -d @alien-css/vite
 ```
 
 ```ts
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue"; // or the project's React/Solid plugin
-import alien from "alien-vite";
+import alien from "@alien-css/vite";
 
 export default defineConfig({ plugins: [alien(), vue()] });
 ```
@@ -49,7 +49,7 @@ JS, JSX, TS, TSX, MJS, MTS and CTS source modules support the same static style 
 
 ```vue
 <script setup lang="ts">
-import { alien, tokens } from "alien";
+import { alien, tokens } from "@alien-css/core";
 const styles = alien.create({ button: { color: tokens.color.green[600] } });
 </script>
 <template><button :class="styles.button">Save</button></template>
@@ -62,7 +62,7 @@ For a Svelte Vite application, use `plugins: [alien(), svelte()]`. For SvelteKit
 ```ts
 import { sveltekit } from "@sveltejs/kit/vite";
 import adapter from "@sveltejs/adapter-static";
-import alien from "alien-vite";
+import alien from "@alien-css/vite";
 
 export default { plugins: [alien(), sveltekit({ adapter: adapter() })] };
 ```
@@ -71,7 +71,7 @@ Use the project's existing adapter. The static adapter above is the test fixture
 
 ```svelte
 <script lang="ts">
-  import { alien, tokens } from "alien";
+  import { alien, tokens } from "@alien-css/core";
   const styles = alien.create({ button: { color: tokens.color.green[600] } });
 </script>
 <button class={styles.button}>Save</button>
@@ -85,7 +85,7 @@ Nuxt can use its `app/` directory as the Vite root. Pass the **project** root so
 
 ```ts
 import { fileURLToPath } from "node:url";
-import alien from "alien-vite";
+import alien from "@alien-css/vite";
 
 export default defineNuxtConfig({
   vite: {
@@ -99,18 +99,18 @@ Vue script/setup styles work as above. Include the generated root `alien-env.d.t
 ## Astro
 
 ```sh
-bun add -d alien-vite @astrojs/compiler
+bun add -d @alien-css/vite @astrojs/compiler
 ```
 
 ```ts
 import { defineConfig } from "astro/config";
-import alien from "alien-vite";
+import alien from "@alien-css/vite";
 export default defineConfig({ vite: { plugins: [alien()] } });
 ```
 
 ```astro
 ---
-import { alien, tokens } from "alien";
+import { alien, tokens } from "@alien-css/core";
 const styles = alien.create({ button: { color: tokens.color.green[600] } });
 ---
 <button class={styles.button}>Save</button>
@@ -121,13 +121,13 @@ Frontmatter is compiled before Astro's transform. For browser scripts, declare s
 ## Next.js with webpack (App Router)
 
 ```sh
-bun add alien
-bun add -d alien-compiler alien-webpack
+bun add @alien-css/core
+bun add -d @alien-css/compiler @alien-css/webpack
 ```
 
 ```js
 // next.config.mjs
-import { alienRule } from "alien-webpack";
+import { alienRule } from "@alien-css/webpack";
 export default {
   webpack(config) {
     config.module.rules.unshift(alienRule({ root: process.cwd() }));
@@ -146,23 +146,25 @@ This route does not need a custom bundler hook. Source styles live in `*.alien.t
 
 ```ts
 // src/button.alien.ts
-import { alien, tokens } from "alien";
+import { alien, tokens } from "@alien-css/core";
 export const styles = alien.create({ button: { color: tokens.color.green[600] } });
 ```
 
 ```sh
-bun add alien
-bun add -d alien-compiler
+bun add @alien-css/core
+bun add -d @alien-css/compiler
 bun run alien generate
 ```
 
-The command generates `src/button.alien.generated.ts` next to its source, plus `.alien/styles.css` and `alien-env.d.ts`. Import the generated module from components:
+The command generates `src/button.alien.generated.ts` next to its source, plus `.alien/styles.css` and `alien-env.d.ts`. The default atomic generator produces descriptors: import `cx` and apply it even to a single style. This is a breaking change for code that previously passed generated values directly to `class` or `className`; use `alien generate --standard` to retain string class maps and their source-order composition.
 
 ```ts
 import { styles } from "./button.alien.generated";
+import { cx } from "@alien-css/core/cx";
+const buttonClass = cx(styles.button);
 ```
 
-Import `.alien/styles.css` once at the application root, or add it to the build tool's global stylesheet list. For Next App Router, import it from `app/layout.tsx`. For Angular, add `".alien/styles.css"` to `angular.json` → build options → `styles`, then bind `[class]="styles.button"` from a component field.
+Import `.alien/styles.css` once at the application root, or add it to the build tool's global stylesheet list. For Next App Router, import it from `app/layout.tsx`. For Angular, add `".alien/styles.css"` to `angular.json` → build options → `styles`, then expose `cx(styles.button)` as a component field and bind that string to `[class]`.
 
 Define the normal production command as `alien generate && <framework build command>`, for example:
 
@@ -177,7 +179,7 @@ Define the normal production command as `alien generate && <framework build comm
 
 For Next, replace `ng build` with `next build --turbopack`. Before starting development, run `alien generate` once, then run `styles:watch` alongside the framework dev server. The generator refreshes CSS/classes on style or globals changes, recovers after source errors, and removes its own obsolete modules after source deletion. It preserves the previous output when compilation fails and refuses to overwrite handwritten files.
 
-Use `--source app` if style definitions are outside `src`, `--globals design.tokens.ts` for a custom config, and `--namespace my-app` for independently built applications sharing a page. Definitions retain their original source module identity. CSS is concatenated in source-path order. Runtime imports and their relative paths are retained; never import a raw `.alien.ts` definition from runtime code, including from another style definition.
+Use `--source app` if style definitions are outside `src`, and `--globals design.tokens.ts` for a custom config. For independently built applications sharing a page, use distinct `--namespace my-app` values and `--atomic-isolation strong`; the compact default has a collision risk and strong isolation increases CSS size. Atomic conditions have a fixed precedence, while `--standard` preserves source-order composition. Runtime imports and their relative paths are retained; never import a raw `.alien.ts` definition from runtime code, including from another style definition.
 
 Generated files belong in `.gitignore`:
 
@@ -189,7 +191,7 @@ alien-env.d.ts
 
 ## Reset and server rendering
 
-The Vite adapter imports the reset through the CSS pipeline whenever it emits styles, so it does not depend only on an HTML entry. For an app without any Alien styles, import `"alien-vite/reset.css"` from a root module to include the configured reset. HTML entries also receive it automatically. The generated stylesheet and webpack adapter include the same configured reset.
+The Vite adapter imports the reset through the CSS pipeline whenever it emits styles, so it does not depend only on an HTML entry. For an app without any Alien styles, import `"@alien-css/vite/reset.css"` from a root module to include the configured reset. HTML entries also receive it automatically. The generated stylesheet and webpack adapter include the same configured reset.
 
 Client/server builds must use the same project root, namespace and globals. Class generation never depends on whether a build targets the browser or server. Actual deployment adapters, streaming behavior, every third-party plugin, and non-DOM renderers such as React Native are outside these tests. Alien produces CSS for web renderers.
 
@@ -199,10 +201,10 @@ The adapters use the documented [Vite plugin lifecycle](https://vite.dev/guide/a
 
 ## Complete-project optimization
 
-`alien generate` compiles the discovered `.alien.ts` / `.alien.js` files together. It preserves their sorted source order, checks conflicts across the complete stylesheet, and compares cross-module sharing against independently optimized groups. Generated modules use a common project namespace, reducing repeated namespace bytes in the compressed stylesheet.
+`alien generate` compiles the discovered `.alien.ts` / `.alien.js` files together and shares atomic declarations across the project. `cx()` resolves conflicting descriptors at the same condition; condition precedence is fixed by the compiler. `alien generate --standard` instead preserves source-order composition and compares safe sharing against independently optimized groups.
 
 Import the generated modules and load `.alien/styles.css` as described above. The generator updates all affected modules in watch mode. Deploy the generated modules and stylesheet from the same generation together: adding/removing files can change generated class names. The output contains all discovered styles; this route does not provide per-route CSS splitting or import-graph tree shaking.
 
 The incremental Vite/webpack path keeps independent module namespaces and CSS chunks. It does not automatically use complete-project compilation. Prefer that path when route-level CSS splitting and component-local hot updates matter more than sharing across modules.
 
-The native compiler exposes `transformProject([{ source, path, moduleId }])` for build integrations that own a complete, ordered set of style modules. It returns `{ modules, css }`; each module contains transformed code and UTF-16 source edits, while CSS is returned once at project level. Module identifiers must be unique, and every input must contain a style call. Call order determines cascade order.
+The native compiler exposes `transformAtomicProject([{ source, path, moduleId }])` and the standard `transformProject(...)` for integrations that own a complete set of style modules. Both return `{ modules, css }`; each module contains transformed code and UTF-16 source edits, while CSS is returned once at project level. Module identifiers must be unique, and every input must contain a style call. In the standard mode, call order determines cascade order.

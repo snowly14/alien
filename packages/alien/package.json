@@ -1,6 +1,6 @@
 {
-  "name": "alien",
-  "version": "0.0.1",
+  "name": "@alien-css/core",
+  "version": "0.1.0",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
@@ -20,5 +20,24 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "description": "Typed CSS compiled at build time with Alien CSS.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snowly14/alien.git",
+    "directory": "packages/alien"
+  },
+  "homepage": "https://github.com/snowly14/alien#readme",
+  "bugs": {
+    "url": "https://github.com/snowly14/alien/issues"
+  },
+  "keywords": [
+    "css",
+    "typescript",
+    "styling",
+    "alien-css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
